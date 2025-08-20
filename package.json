@@ -1,0 +1,60 @@
+{
+  "name": "gestionale-finanziario",
+  "version": "1.0.0",
+  "description": "Sistema bancario completo e modulare per istituti finanziari con integrazione nativa per criptovalute",
+  "main": "index.js",
+  "scripts": {
+    "dev": "concurrently \"npm run dev:api\" \"npm run dev:frontend\"",
+    "dev:api": "nodemon api-gateway/src/server.js",
+    "dev:frontend": "cd frontend && npm start",
+    "build": "npm run build:api && npm run build:frontend",
+    "build:api": "cd api-gateway && npm run build",
+    "build:frontend": "cd frontend && npm run build",
+    "start": "docker-compose up -d",
+    "stop": "docker-compose down",
+    "restart": "docker-compose restart",
+    "logs": "docker-compose logs -f",
+    "setup": "./scripts/setup.sh",
+    "init-db": "./scripts/init-db.sh",
+    "test": "npm run test:api && npm run test:frontend",
+    "test:api": "cd api-gateway && npm test",
+    "test:frontend": "cd frontend && npm test",
+    "lint": "npm run lint:api && npm run lint:frontend",
+    "lint:api": "cd api-gateway && npm run lint",
+    "lint:frontend": "cd frontend && npm run lint",
+    "security": "npm audit && npm run security:scan",
+    "security:scan": "snyk test",
+    "docs": "npm run docs:api && npm run docs:frontend",
+    "docs:api": "cd api-gateway && npm run docs",
+    "docs:frontend": "cd frontend && npm run docs"
+  },
+  "keywords": [
+    "banking",
+    "fintech",
+    "cryptocurrency",
+    "bitcoin",
+    "microservices",
+    "blockchain",
+    "compliance",
+    "security"
+  ],
+  "author": "Gestionale Finanziario Team",
+  "license": "MIT",
+  "devDependencies": {
+    "concurrently": "^8.2.2",
+    "nodemon": "^3.0.2",
+    "snyk": "^1.1260.0"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=9.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/gestionale-finanziario/gestionale-finanziario.git"
+  },
+  "bugs": {
+    "url": "https://github.com/gestionale-finanziario/gestionale-finanziario/issues"
+  },
+  "homepage": "https://gestionale-finanziario.com"
+}

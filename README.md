@@ -78,8 +78,8 @@
 ### Frontend Only (Development)
 ```bash
 # Clone the repository
-git clone https://github.com/your-username/gestionale-finanziario.git
-cd gestionale-finanziario
+git clone https://github.com/thedragon689/gestionale-finanziario-app.git
+cd gestionale-finanziario-app
 
 # Install frontend dependencies
 cd frontend
@@ -94,8 +94,8 @@ The application will be available at `http://localhost:3000`
 ### Full Stack (Production)
 ```bash
 # Clone and setup
-git clone https://github.com/your-username/gestionale-finanziario.git
-cd gestionale-finanziario
+git clone https://github.com/thedragon689/gestionale-finanziario-app.git
+cd gestionale-finanziario-app
 
 # Run setup script
 npm run setup
@@ -304,8 +304,8 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ## 🆘 Support
 
 - **Documentation**: Check the [docs/](docs/) folder
-- **Issues**: Report bugs and feature requests via [GitHub Issues](https://github.com/your-username/gestionale-finanziario/issues)
-- **Discussions**: Join the conversation in [GitHub Discussions](https://github.com/your-username/gestionale-finanziario/discussions)
+- **Issues**: Report bugs and feature requests via [GitHub Issues](https://github.com/thedragon689/gestionale-finanziario-app/issues)
+- **Discussions**: Join the conversation in [GitHub Discussions](https://github.com/thedragon689/gestionale-finanziario-app/discussions)
 - **Email**: support@gestionale-finanziario.com
 
 ## 🙏 Acknowledgments
@@ -331,8 +331,8 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 **Made with ❤️ by the Gestionale Finanziario Team**
 
-[![GitHub stars](https://img.shields.io/github/stars/your-username/gestionale-finanziario?style=social)](https://github.com/your-username/gestionale-finanziario/stargazers)
-[![GitHub forks](https://img.shields.io/github/forks/your-username/gestionale-finanziario?style=social)](https://github.com/your-username/gestionale-finanziario/network)
-[![GitHub issues](https://img.shields.io/github/issues/your-username/gestionale-finanziario)](https://github.com/your-username/gestionale-finanziario/issues)
-[![GitHub pull requests](https://img.shields.io/github/issues-pr/your-username/gestionale-finanziario)](https://github.com/your-username/gestionale-finanziario/pulls)
+[![GitHub stars](https://img.shields.io/github/stars/thedragon689/gestionale-finanziario-app?style=social)](https://github.com/thedragon689/gestionale-finanziario-app/stargazers)
+[![GitHub forks](https://img.shields.io/github/forks/thedragon689/gestionale-finanziario-app?style=social)](https://github.com/thedragon689/gestionale-finanziario-app/network)
+[![GitHub issues](https://img.shields.io/github/issues/thedragon689/gestionale-finanziario-app)](https://github.com/thedragon689/gestionale-finanziario-app/issues)
+[![GitHub pull requests](https://img.shields.io/github/issues-pr/thedragon689/gestionale-finanziario-app)](https://github.com/thedragon689/gestionale-finanziario-app/pulls)
 

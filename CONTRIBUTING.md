@@ -65,8 +65,8 @@ This project and everyone participating in it is governed by our Code of Conduct
 
 1. **Fork and Clone**
    ```bash
-   git clone https://github.com/your-username/gestionale-finanziario.git
-   cd gestionale-finanziario
+   git clone https://github.com/thedragon689/gestionale-finanziario-app.git
+cd gestionale-finanziario-app
    ```
 
 2. **Install Dependencies**
@@ -303,9 +303,9 @@ Contributors will be recognized in the following ways:
 
 ## 🤝 Community
 
-- **Discussions**: [GitHub Discussions](https://github.com/your-username/gestionale-finanziario/discussions)
-- **Issues**: [GitHub Issues](https://github.com/your-username/gestionale-finanziario/issues)
-- **Releases**: [GitHub Releases](https://github.com/your-username/gestionale-finanziario/releases)
+- **Discussions**: [GitHub Discussions](https://github.com/thedragon689/gestionale-finanziario-app/discussions)
+- **Issues**: [GitHub Issues](https://github.com/thedragon689/gestionale-finanziario-app/issues)
+- **Releases**: [GitHub Releases](https://github.com/thedragon689/gestionale-finanziario-app/releases)
 
 ---
 

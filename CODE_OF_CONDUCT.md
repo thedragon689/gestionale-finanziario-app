@@ -133,8 +133,8 @@ https://www.contributor-covenant.org/translations.
 For questions or concerns about this Code of Conduct, please contact:
 
 - **Email**: conduct@gestionale-finanziario.com
-- **GitHub Issues**: [Create an issue](https://github.com/your-username/gestionale-finanziario/issues) with the "conduct" label
-- **Project Maintainers**: [@maintainers](https://github.com/orgs/your-username/teams/maintainers)
+- **GitHub Issues**: [Create an issue](https://github.com/thedragon689/gestionale-finanziario-app/issues) with the "conduct" label
+- **Project Maintainers**: [@maintainers](https://github.com/orgs/thedragon689/teams/maintainers)
 
 ## Reporting Guidelines
 

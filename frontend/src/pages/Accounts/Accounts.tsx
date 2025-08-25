@@ -55,9 +55,23 @@ const Accounts: React.FC = () => {
   const [typeFilter, setTypeFilter] = useState<string>('all');
   const [selectedAccount, setSelectedAccount] = useState<Account | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [newAccountDialogOpen, setNewAccountDialogOpen] = useState(false);
   const [accounts, setAccounts] = useState<Account[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [successMessage, setSuccessMessage] = useState<string>('');
+  
+  // New account form state
+  const [newAccount, setNewAccount] = useState({
+    accountNumber: '',
+    type: 'checking' as Account['type'],
+    status: 'active' as Account['status'],
+    balance: '',
+    currency: 'EUR',
+    description: '',
+    holderName: '',
+    bankName: ''
+  });
 
   // Load accounts data
   useEffect(() => {
@@ -143,6 +157,71 @@ const Accounts: React.FC = () => {
     setDialogOpen(true);
   };
 
+  const handleNewAccount = () => {
+    setNewAccountDialogOpen(true);
+  };
+
+  const handleCreateAccount = async () => {
+    try {
+      const accountData = {
+        ...newAccount,
+        balance: parseFloat(newAccount.balance) || 0,
+        id: Date.now().toString(), // Temporary ID
+        name: newAccount.description || `Conto ${newAccount.type}`,
+        iban: `IT${Math.random().toString(36).substr(2, 9).toUpperCase()}`,
+        creditLimit: newAccount.type === 'credit' ? 5000 : undefined,
+        interestRate: newAccount.type === 'savings' ? 1.5 : undefined,
+        monthlyTransactions: 0,
+        createdAt: new Date().toISOString()
+      };
+
+      // Salva nel servizio
+      const createdAccount = await accountService.createAccount(accountData);
+      
+      // Salva anche nel localStorage per persistenza locale
+      const existingAccounts = JSON.parse(localStorage.getItem('accounts') || '[]');
+      const updatedAccounts = [...existingAccounts, createdAccount];
+      localStorage.setItem('accounts', JSON.stringify(updatedAccounts));
+      
+      // Aggiorna lo stato locale
+      setAccounts([...accounts, createdAccount]);
+      setNewAccountDialogOpen(false);
+      
+      // Reset form
+      setNewAccount({
+        accountNumber: '',
+        type: 'checking',
+        status: 'active',
+        balance: '',
+        currency: 'EUR',
+        description: '',
+        holderName: '',
+        bankName: ''
+      });
+      
+      // Mostra messaggio di successo
+      setSuccessMessage('Conto creato e salvato permanentemente!');
+      setTimeout(() => setSuccessMessage(''), 3000);
+    } catch (err) {
+      setError('Errore nella creazione del conto');
+      console.error('Failed to create account:', err);
+    }
+  };
+
+  const handleCancelNewAccount = () => {
+    setNewAccountDialogOpen(false);
+    setNewAccount({
+      accountNumber: '',
+      type: 'checking',
+      status: 'active',
+      balance: '',
+      currency: 'EUR',
+      description: '',
+      holderName: '',
+      bankName: ''
+    });
+  };
+
   if (loading) {
     return (
       <Container maxWidth="xl">
@@ -174,6 +253,13 @@ const Accounts: React.FC = () => {
         <Typography variant="h4" gutterBottom fontWeight="bold">
           Conti Bancari
         </Typography>
+
+        {/* Success Message */}
+        {successMessage && (
+          <Alert severity="success" sx={{ mb: 3 }}>
+            {successMessage}
+          </Alert>
+        )}
 
         {/* Stats Cards */}
         <Grid container spacing={3} sx={{ mb: 4 }}>
@@ -278,10 +364,10 @@ const Accounts: React.FC = () => {
             </Grid>
             <Grid item xs={12} md={2}>
               <Button
-                fullWidth
                 variant="contained"
                 startIcon={<Add />}
-                sx={{ py: 1.5 }}
+                onClick={handleNewAccount}
+                sx={{ mb: 2 }}
               >
                 Nuovo Conto
               </Button>
@@ -504,6 +590,113 @@ const Accounts: React.FC = () => {
           <DialogActions>
             <Button onClick={() => setDialogOpen(false)}>Chiudi</Button>
             <Button variant="contained">Modifica</Button>
+          </DialogActions>
+        </Dialog>
+
+        {/* New Account Dialog */}
+        <Dialog open={newAccountDialogOpen} onClose={handleCancelNewAccount} maxWidth="md" fullWidth>
+          <DialogTitle>
+            Nuovo Conto Bancario
+          </DialogTitle>
+          <DialogContent>
+            <Grid container spacing={3} sx={{ mt: 1 }}>
+              <Grid item xs={12} md={6}>
+                <TextField
+                  fullWidth
+                  label="Numero Conto"
+                  value={newAccount.accountNumber}
+                  onChange={(e) => setNewAccount({...newAccount, accountNumber: e.target.value})}
+                  margin="normal"
+                  required
+                />
+                <TextField
+                  fullWidth
+                  label="Nome Intestatario"
+                  value={newAccount.holderName}
+                  onChange={(e) => setNewAccount({...newAccount, holderName: e.target.value})}
+                  margin="normal"
+                  required
+                />
+                <TextField
+                  fullWidth
+                  label="Nome Banca"
+                  value={newAccount.bankName}
+                  onChange={(e) => setNewAccount({...newAccount, bankName: e.target.value})}
+                  margin="normal"
+                  required
+                />
+                <TextField
+                  fullWidth
+                  label="Descrizione"
+                  value={newAccount.description}
+                  onChange={(e) => setNewAccount({...newAccount, description: e.target.value})}
+                  margin="normal"
+                  multiline
+                  rows={2}
+                />
+              </Grid>
+              <Grid item xs={12} md={6}>
+                <FormControl fullWidth margin="normal" required>
+                  <InputLabel>Tipo Conto</InputLabel>
+                  <Select
+                    value={newAccount.type}
+                    onChange={(e) => setNewAccount({...newAccount, type: e.target.value as Account['type']})}
+                    label="Tipo Conto"
+                  >
+                    <MenuItem value="checking">Conto Corrente</MenuItem>
+                    <MenuItem value="savings">Conto Risparmio</MenuItem>
+                    <MenuItem value="credit">Carta di Credito</MenuItem>
+                    <MenuItem value="business">Conto Aziendale</MenuItem>
+                  </Select>
+                </FormControl>
+                <FormControl fullWidth margin="normal" required>
+                  <InputLabel>Stato</InputLabel>
+                  <Select
+                    value={newAccount.status}
+                    onChange={(e) => setNewAccount({...newAccount, status: e.target.value as Account['status']})}
+                    label="Stato"
+                  >
+                    <MenuItem value="active">Attivo</MenuItem>
+                    <MenuItem value="inactive">Inattivo</MenuItem>
+                    <MenuItem value="suspended">Sospeso</MenuItem>
+                  </Select>
+                </FormControl>
+                <TextField
+                  fullWidth
+                  label="Saldo Iniziale"
+                  type="number"
+                  value={newAccount.balance}
+                  onChange={(e) => setNewAccount({...newAccount, balance: e.target.value})}
+                  margin="normal"
+                  required
+                  InputProps={{
+                    startAdornment: <InputAdornment position="start">€</InputAdornment>,
+                  }}
+                />
+                <FormControl fullWidth margin="normal" required>
+                  <InputLabel>Valuta</InputLabel>
+                  <Select
+                    value={newAccount.currency}
+                    onChange={(e) => setNewAccount({...newAccount, currency: e.target.value})}
+                    label="Valuta"
+                  >
+                    <MenuItem value="EUR">EUR (€)</MenuItem>
+                    <MenuItem value="USD">USD ($)</MenuItem>
+                    <MenuItem value="GBP">GBP (£)</MenuItem>
+                  </Select>
+                </FormControl>
+              </Grid>
+            </Grid>
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={handleCancelNewAccount}>Annulla</Button>
+            <Button 
+              onClick={handleCreateAccount} 
+              variant="contained"
+              disabled={!newAccount.accountNumber || !newAccount.holderName || !newAccount.bankName}
+            >
+              Crea Conto
+            </Button>
           </DialogActions>
         </Dialog>
       </Box>

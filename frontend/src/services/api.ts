@@ -1,5 +1,29 @@
-// API service with fetch implementation
-const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:3001/api';
+// Configurazione API
+const API_CONFIG = {
+  // URL base per le diverse API
+  CORE_BANKING_URL: process.env.REACT_APP_CORE_BANKING_URL || 'http://localhost:3001',
+  CRYPTO_URL: process.env.REACT_APP_CRYPTO_URL || 'http://localhost:3002',
+  
+  // Timeout per le chiamate API
+  TIMEOUT: 10000,
+  
+  // Retry configuration
+  MAX_RETRIES: 3,
+  RETRY_DELAY: 1000,
+  
+  // Debug mode
+  DEBUG: process.env.NODE_ENV === 'development'
+};
+
+// Funzione per log di debug
+const debugLog = (...args: any[]) => {
+  if (API_CONFIG.DEBUG) {
+    console.log('🌐 [API]', ...args);
+  }
+};
+
+// URL base per le API
+const API_BASE_URL = API_CONFIG.CORE_BANKING_URL;
 
 interface ApiResponse<T> {
   data: T;
@@ -20,6 +44,9 @@ class ApiService {
   ): Promise<ApiResponse<T>> {
     const url = `${this.baseURL}${endpoint}`;
     
+    debugLog(`🔄 Making request to: ${url}`);
+    debugLog(`📝 Request options:`, options);
+    
     // Add default headers
     const headers: HeadersInit = {
       'Content-Type': 'application/json',
@@ -30,6 +57,7 @@ class ApiService {
     const token = localStorage.getItem('token');
     if (token) {
       (headers as Record<string, string>).Authorization = `Bearer ${token}`;
+      debugLog('🔑 Auth token added to request');
     }
 
     try {
@@ -37,6 +65,8 @@ class ApiService {
         ...options,
         headers,
       });
+
+      debugLog(`📡 Response status: ${response.status} ${response.statusText}`);
 
       if (!response.ok) {
         if (response.status === 401) {
@@ -49,8 +79,10 @@ class ApiService {
       }
 
       const data = await response.json();
+      debugLog(`✅ Response data:`, data);
       return data;
     } catch (error) {
+      debugLog(`❌ Request failed:`, error);
       console.error('API request failed:', error);
       throw error;
     }

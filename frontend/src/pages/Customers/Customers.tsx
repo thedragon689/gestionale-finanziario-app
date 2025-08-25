@@ -55,9 +55,24 @@ const Customers: React.FC = () => {
   const [typeFilter, setTypeFilter] = useState<string>('all');
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [newCustomerDialogOpen, setNewCustomerDialogOpen] = useState(false);
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [successMessage, setSuccessMessage] = useState<string>('');
+
+  // New customer form state
+  const [newCustomer, setNewCustomer] = useState({
+    name: '',
+    email: '',
+    phone: '',
+    type: 'individual' as Customer['type'],
+    status: 'active' as Customer['status'],
+    address: '',
+    city: '',
+    country: 'Italia',
+    notes: ''
+  });
 
   // Load customers data
   useEffect(() => {
@@ -122,6 +137,71 @@ const Customers: React.FC = () => {
     setDialogOpen(true);
   };
 
+  const handleNewCustomer = () => {
+    setNewCustomerDialogOpen(true);
+  };
+
+  const handleCreateCustomer = async () => {
+    try {
+      const customerData = {
+        ...newCustomer,
+        id: Date.now().toString(), // Temporary ID
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+        accounts: [],
+        totalBalance: 0,
+        monthlyTransactions: 0
+      };
+
+      // Salva nel servizio
+      const createdCustomer = await customerService.createCustomer(customerData);
+      
+      // Salva anche nel localStorage per persistenza locale
+      const existingCustomers = JSON.parse(localStorage.getItem('customers') || '[]');
+      const updatedCustomers = [...existingCustomers, createdCustomer];
+      localStorage.setItem('customers', JSON.stringify(updatedCustomers));
+      
+      // Aggiorna lo stato locale
+      setCustomers([...customers, createdCustomer]);
+      setNewCustomerDialogOpen(false);
+      
+      // Reset form
+      setNewCustomer({
+        name: '',
+        email: '',
+        phone: '',
+        type: 'individual',
+        status: 'active',
+        address: '',
+        city: '',
+        country: 'Italia',
+        notes: ''
+      });
+      
+      // Mostra messaggio di successo
+      setSuccessMessage('Cliente creato e salvato permanentemente!');
+      setTimeout(() => setSuccessMessage(''), 3000);
+    } catch (err) {
+      setError('Errore nella creazione del cliente');
+      console.error('Failed to create customer:', err);
+    }
+  };
+
+  const handleCancelNewCustomer = () => {
+    setNewCustomerDialogOpen(false);
+    setNewCustomer({
+      name: '',
+      email: '',
+      phone: '',
+      type: 'individual',
+      status: 'active',
+      address: '',
+      city: '',
+      country: 'Italia',
+      notes: ''
+    });
+  };
+
   if (loading) {
     return (
       <Container maxWidth="xl">
@@ -153,6 +233,13 @@ const Customers: React.FC = () => {
         <Typography variant="h4" gutterBottom fontWeight="bold">
           Clienti
         </Typography>
+
+        {/* Success Message */}
+        {successMessage && (
+          <Alert severity="success" sx={{ mb: 3 }}>
+            {successMessage}
+          </Alert>
+        )}
 
         {/* Stats Cards */}
         <Grid container spacing={3} sx={{ mb: 4 }}>
@@ -255,10 +342,10 @@ const Customers: React.FC = () => {
             </Grid>
             <Grid item xs={12} md={2}>
               <Button
-                fullWidth
                 variant="contained"
                 startIcon={<Add />}
-                sx={{ py: 1.5 }}
+                onClick={handleNewCustomer}
+                sx={{ mb: 2 }}
               >
                 Nuovo Cliente
               </Button>
@@ -453,6 +540,86 @@ const Customers: React.FC = () => {
           <DialogActions>
             <Button onClick={() => setDialogOpen(false)}>Chiudi</Button>
             <Button variant="contained">Modifica</Button>
+          </DialogActions>
+        </Dialog>
+
+        {/* New Customer Dialog */}
+        <Dialog open={newCustomerDialogOpen} onClose={handleCancelNewCustomer} maxWidth="sm" fullWidth>
+          <DialogTitle>Nuovo Cliente</DialogTitle>
+          <DialogContent>
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, mt: 2 }}>
+              <TextField
+                label="Nome"
+                value={newCustomer.name}
+                onChange={(e) => setNewCustomer({ ...newCustomer, name: e.target.value })}
+                fullWidth
+              />
+              <TextField
+                label="Email"
+                value={newCustomer.email}
+                onChange={(e) => setNewCustomer({ ...newCustomer, email: e.target.value })}
+                fullWidth
+              />
+              <TextField
+                label="Telefono"
+                value={newCustomer.phone}
+                onChange={(e) => setNewCustomer({ ...newCustomer, phone: e.target.value })}
+                fullWidth
+              />
+              <FormControl fullWidth>
+                <InputLabel>Tipo</InputLabel>
+                <Select
+                  value={newCustomer.type}
+                  label="Tipo"
+                  onChange={(e) => setNewCustomer({ ...newCustomer, type: e.target.value as Customer['type'] })}
+                >
+                  <MenuItem value="individual">Privato</MenuItem>
+                  <MenuItem value="business">Azienda</MenuItem>
+                </Select>
+              </FormControl>
+              <FormControl fullWidth>
+                <InputLabel>Stato</InputLabel>
+                <Select
+                  value={newCustomer.status}
+                  label="Stato"
+                  onChange={(e) => setNewCustomer({ ...newCustomer, status: e.target.value as Customer['status'] })}
+                >
+                  <MenuItem value="active">Attivo</MenuItem>
+                  <MenuItem value="inactive">Inattivo</MenuItem>
+                  <MenuItem value="suspended">Sospeso</MenuItem>
+                </Select>
+              </FormControl>
+              <TextField
+                label="Indirizzo"
+                value={newCustomer.address}
+                onChange={(e) => setNewCustomer({ ...newCustomer, address: e.target.value })}
+                fullWidth
+              />
+              <TextField
+                label="Città"
+                value={newCustomer.city}
+                onChange={(e) => setNewCustomer({ ...newCustomer, city: e.target.value })}
+                fullWidth
+              />
+              <TextField
+                label="Paese"
+                value={newCustomer.country}
+                onChange={(e) => setNewCustomer({ ...newCustomer, country: e.target.value })}
+                fullWidth
+              />
+              <TextField
+                label="Note"
+                multiline
+                rows={2}
+                value={newCustomer.notes}
+                onChange={(e) => setNewCustomer({ ...newCustomer, notes: e.target.value })}
+                fullWidth
+              />
+            </Box>
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={handleCancelNewCustomer}>Annulla</Button>
+            <Button variant="contained" onClick={handleCreateCustomer}>Crea</Button>
           </DialogActions>
         </Dialog>
       </Box>

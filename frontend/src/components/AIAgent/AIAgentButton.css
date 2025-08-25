@@ -1,0 +1,221 @@
+/* Animazioni personalizzate per l'AI Agent Button */
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-5px);
+  }
+}
+
+@keyframes glow {
+  0%, 100% {
+    box-shadow: 0 8px 32px rgba(102, 126, 234, 0.3);
+  }
+  50% {
+    box-shadow: 0 8px 32px rgba(102, 126, 234, 0.6), 0 0 20px rgba(102, 126, 234, 0.4);
+  }
+}
+
+@keyframes pulse {
+  0% {
+    opacity: 0.7;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.2);
+  }
+  100% {
+    opacity: 0.7;
+    transform: scale(1);
+  }
+}
+
+@keyframes rotate {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes bounce {
+  0%, 20%, 50%, 80%, 100% {
+    transform: translateY(0);
+  }
+  40% {
+    transform: translateY(-10px);
+  }
+  60% {
+    transform: translateY(-5px);
+  }
+}
+
+/* Stili per il pulsante principale */
+.ai-agent-fab {
+  animation: float 3s ease-in-out infinite;
+}
+
+.ai-agent-fab:hover {
+  animation: glow 2s ease-in-out infinite;
+}
+
+/* Stili per l'icona AI personalizzata */
+.ai-icon-container {
+  position: relative;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.ai-icon-outer {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  border: 2px solid rgba(255, 255, 255, 0.9);
+  position: relative;
+  transition: all 0.3s ease;
+}
+
+.ai-icon-outer::before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.9);
+  transform: translate(-50%, -50%);
+  transition: all 0.3s ease;
+}
+
+.ai-icon-connection-points {
+  position: absolute;
+  width: 24px;
+  height: 24px;
+}
+
+.ai-icon-connection-points::before,
+.ai-icon-connection-points::after {
+  content: "";
+  position: absolute;
+  width: 3px;
+  height: 3px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.7);
+  animation: pulse 2s infinite;
+}
+
+.ai-icon-connection-points::before {
+  top: 0;
+  right: 0;
+  animation-delay: 0s;
+}
+
+.ai-icon-connection-points::after {
+  bottom: 0;
+  left: 0;
+  animation-delay: 1s;
+}
+
+/* Effetti hover per l'icona */
+.ai-agent-fab:hover .ai-icon-outer {
+  border-color: rgba(255, 255, 255, 1);
+  transform: scale(1.1);
+}
+
+.ai-agent-fab:hover .ai-icon-outer::before {
+  background: rgba(255, 255, 255, 1);
+  transform: translate(-50%, -50%) scale(1.2);
+}
+
+.ai-agent-fab:hover .ai-icon-connection-points::before,
+.ai-agent-fab:hover .ai-icon-connection-points::after {
+  background: rgba(255, 255, 255, 1);
+  animation: pulse 1s infinite;
+}
+
+/* Stili per le notifiche */
+.ai-notification-badge {
+  animation: bounce 1s ease-in-out;
+}
+
+.ai-notification-badge.error {
+  animation: pulse 1s infinite;
+}
+
+/* Stili per il tooltip personalizzato */
+.ai-tooltip {
+  background: rgba(0, 0, 0, 0.9) !important;
+  color: white !important;
+  font-size: 0.875rem !important;
+  max-width: 200px !important;
+  padding: 16px !important;
+  border-radius: 8px !important;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3) !important;
+}
+
+/* Effetti di transizione */
+.ai-agent-fab * {
+  transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+/* Stili per dispositivi mobili */
+@media (max-width: 768px) {
+  .ai-agent-fab {
+    width: 56px !important;
+    height: 56px !important;
+    bottom: 16px !important;
+    right: 16px !important;
+  }
+  
+  .ai-icon-container {
+    width: 20px;
+    height: 20px;
+  }
+  
+  .ai-icon-outer {
+    width: 16px;
+    height: 16px;
+  }
+  
+  .ai-icon-outer::before {
+    width: 6px;
+    height: 6px;
+  }
+}
+
+/* Stili per schermi molto piccoli */
+@media (max-width: 480px) {
+  .ai-agent-fab {
+    width: 48px !important;
+    height: 48px !important;
+    bottom: 12px !important;
+    right: 12px !important;
+  }
+}
+
+/* Effetti di focus per accessibilità */
+.ai-agent-fab:focus {
+  outline: 2px solid rgba(102, 126, 234, 0.8);
+  outline-offset: 2px;
+}
+
+/* Stili per tema scuro */
+@media (prefers-color-scheme: dark) {
+  .ai-agent-fab {
+    background: linear-gradient(135deg, #4a5568 0%, #2d3748 100%) !important;
+    box-shadow: 0 8px 32px rgba(74, 85, 104, 0.4) !important;
+  }
+  
+  .ai-agent-fab:hover {
+    background: linear-gradient(135deg, #2d3748 0%, #4a5568 100%) !important;
+    box-shadow: 0 12px 40px rgba(74, 85, 104, 0.6) !important;
+  }
+}

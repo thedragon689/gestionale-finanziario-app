@@ -1,8 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Box,
-  Card,
-  CardContent,
   TextField,
   Button,
   Typography,
@@ -17,8 +15,13 @@ import {
   AccountCircle,
   Lock,
 } from '@mui/icons-material';
+import { useNavigate } from 'react-router-dom';
+
+// Import logo
+import logo from '../../assets/logo.png';
 
 const Login: React.FC = () => {
+  const navigate = useNavigate();
   const [formData, setFormData] = useState({
     email: '',
     password: '',
@@ -26,6 +29,13 @@ const Login: React.FC = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+
+  // Pulisci eventuali token invalidi all'apertura della pagina
+  useEffect(() => {
+    // Rimuovi token e dati utente esistenti per forzare il login
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -35,6 +45,7 @@ const Login: React.FC = () => {
     try {
       // Mock authentication - replace with actual API call
       if (formData.email === 'admin@bank.com' && formData.password === 'password') {
+        // Salva i dati di autenticazione
         localStorage.setItem('token', 'mock-jwt-token');
         localStorage.setItem('user', JSON.stringify({
           id: '1',
@@ -42,7 +53,16 @@ const Login: React.FC = () => {
           email: formData.email,
           role: 'admin',
         }));
-        window.location.href = '/dashboard';
+
+        // Controlla se c'è un reindirizzamento salvato
+        const redirectPath = localStorage.getItem('redirectAfterLogin');
+        if (redirectPath && redirectPath !== '/login' && redirectPath !== '/reports') {
+          localStorage.removeItem('redirectAfterLogin');
+          navigate(redirectPath);
+        } else {
+          // Reindirizza alla dashboard di default
+          navigate('/');
+        }
       } else {
         setError('Credenziali non valide');
       }
@@ -67,7 +87,7 @@ const Login: React.FC = () => {
       <Paper
         elevation={24}
         sx={{
-          maxWidth: 400,
+          maxWidth: 450,
           width: '100%',
           borderRadius: 3,
           overflow: 'hidden',
@@ -76,19 +96,38 @@ const Login: React.FC = () => {
         <Box
           sx={{
             background: 'linear-gradient(135deg, #1976d2 0%, #42a5f5 100%)',
-            p: 3,
+            p: 4,
             textAlign: 'center',
           }}
         >
-          <Typography variant="h4" color="white" fontWeight="bold">
-            🏦 Gestionale Finanziario
+          {/* Logo dell'applicazione */}
+          <Box sx={{ mb: 3, display: 'flex', justifyContent: 'center' }}>
+            <Box
+              component="img"
+              src={logo}
+              alt="Logo Gestionale Finanziario"
+              sx={{
+                width: 80,
+                height: 80,
+                borderRadius: 2,
+                boxShadow: '0 4px 20px rgba(0,0,0,0.3)',
+                border: '3px solid rgba(255,255,255,0.2)',
+              }}
+            />
+          </Box>
+          
+          <Typography variant="h4" color="white" fontWeight="bold" gutterBottom>
+            Gestionale Finanziario
           </Typography>
-          <Typography variant="body1" color="white" sx={{ mt: 1, opacity: 0.9 }}>
+          <Typography variant="h6" color="white" sx={{ opacity: 0.9, fontWeight: 300 }}>
+            Sistema di Gestione AI Avanzato
+          </Typography>
+          <Typography variant="body1" color="white" sx={{ mt: 1, opacity: 0.8 }}>
             Accedi al tuo account
           </Typography>
         </Box>
 
-        <CardContent sx={{ p: 4 }}>
+        <Box sx={{ p: 4 }}>
           {error && (
             <Alert severity="error" sx={{ mb: 3 }}>
               {error}
@@ -165,7 +204,7 @@ const Login: React.FC = () => {
               Credenziali demo: admin@bank.com / password
             </Typography>
           </Box>
-        </CardContent>
+        </Box>
       </Paper>
     </Box>
   );

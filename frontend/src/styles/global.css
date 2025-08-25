@@ -1,0 +1,558 @@
+/* Reset CSS e correzioni globali */
+* {
+  box-sizing: border-box;
+}
+
+html {
+  /* Forza modalità standard */
+  line-height: 1.15;
+  /* Fix per webkit text size adjust */
+  text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  font-family: 'Roboto', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  /* Forza modalità standard */
+  line-height: 1.5;
+}
+
+/* Correzione per problemi CSS parsing */
+.font-size-fix {
+  font-size: inherit !important;
+}
+
+.letter-spacing-fix {
+  letter-spacing: normal !important;
+}
+
+.height-fix {
+  height: auto !important;
+}
+
+/* Fix per Material-UI e Emotion */
+.MuiChip-root {
+  font-size: 0.75rem !important;
+  letter-spacing: 0.0178571429em !important;
+}
+
+.MuiButton-root {
+  font-size: 0.875rem !important;
+  letter-spacing: 0.0285714286em !important;
+}
+
+.MuiTypography-root {
+  font-size: inherit !important;
+  letter-spacing: inherit !important;
+}
+
+/* Fix per pseudo-classi problematiche */
+.MuiButton-root::-moz-focus-inner {
+  border: 0;
+}
+
+.MuiInputBase-root input::-ms-input-placeholder {
+  color: rgba(0, 0, 0, 0.54);
+}
+
+.MuiInputBase-root input::-webkit-input-placeholder {
+  color: rgba(0, 0, 0, 0.54);
+}
+
+/* Fix per problemi di layout */
+.dashboard-container {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Fix specifici per AI Chatbot - Prevenzione sovrapposizioni */
+.ai-chatbot-container {
+  position: relative !important;
+  overflow: hidden !important;
+}
+
+.ai-chatbot-messages {
+  flex: 1 !important;
+  min-height: 0 !important;
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+}
+
+.ai-chatbot-input-area {
+  flex-shrink: 0 !important;
+  position: relative !important;
+  z-index: 1 !important;
+}
+
+.ai-chatbot-quick-replies {
+  flex-shrink: 0 !important;
+  position: relative !important;
+  z-index: 2 !important;
+  /* Fix per visibilità risposte rapide */
+  display: flex !important;
+  flex-direction: column !important;
+  min-height: fit-content !important;
+  background-color: white !important;
+  border-top: 1px solid !important;
+  border-color: rgba(0, 0, 0, 0.12) !important;
+}
+
+/* Fix specifico per i chip delle risposte rapide */
+.ai-chatbot-quick-replies .MuiChip-root {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  min-height: 36px !important;
+  height: auto !important;
+  cursor: pointer !important;
+  transition: all 0.2s ease-in-out !important;
+  font-size: 0.875rem !important;
+  padding: 8px 12px !important;
+  margin: 2px !important;
+}
+
+.ai-chatbot-quick-replies .MuiChip-root:hover {
+  background-color: #1976d2 !important;
+  color: white !important;
+  transform: translateY(-1px) !important;
+  box-shadow: 0 2px 8px rgba(25, 118, 210, 0.3) !important;
+}
+
+.ai-chatbot-quick-replies .MuiChip-label {
+  white-space: normal !important;
+  line-height: 1.4 !important;
+  padding: 4px 8px !important;
+  font-weight: 500 !important;
+}
+
+/* Fix per il container delle risposte rapide */
+.ai-chatbot-quick-replies-container {
+  display: flex !important;
+  flex-wrap: wrap !important;
+  gap: 12px !important;
+  align-items: flex-start !important;
+  justify-content: flex-start !important;
+  max-width: 100% !important;
+  overflow: visible !important;
+  padding: 8px 0 !important;
+  min-height: 40px !important;
+}
+
+/* Fix per il titolo delle risposte rapide */
+.ai-chatbot-quick-replies-title {
+  display: block !important;
+  margin-bottom: 16px !important;
+  font-weight: 600 !important;
+  color: rgba(0, 0, 0, 0.87) !important;
+  font-size: 0.875rem !important;
+  line-height: 1.2 !important;
+}
+
+/* Fix per Grid e Flex conflicts */
+.MuiGrid-container.ai-chatbot-grid {
+  height: 100% !important;
+  flex-wrap: nowrap !important;
+  min-height: 0 !important;
+}
+
+.MuiGrid-item.ai-chatbot-messages-item {
+  display: flex !important;
+  flex-direction: column !important;
+  min-height: 0 !important;
+  flex: 1 !important;
+  overflow: hidden !important;
+}
+
+/* Fix per responsive layout */
+.ai-chatbot-responsive-buttons {
+  display: grid !important;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)) !important;
+  gap: 8px !important;
+  width: 100% !important;
+}
+
+/* Fix per overflow e word wrapping */
+.ai-chatbot-text-content {
+  word-break: break-word !important;
+  overflow-wrap: break-word !important;
+  hyphens: auto !important;
+  max-width: 100% !important;
+}
+
+/* Fix per scrollbar personalizzata */
+.ai-chatbot-scrollbar::-webkit-scrollbar {
+  width: 8px !important;
+}
+
+.ai-chatbot-scrollbar::-webkit-scrollbar-track {
+  background-color: #f1f3f4 !important;
+  border-radius: 4px !important;
+}
+
+.ai-chatbot-scrollbar::-webkit-scrollbar-thumb {
+  background-color: #dadce0 !important;
+  border-radius: 4px !important;
+}
+
+.ai-chatbot-scrollbar::-webkit-scrollbar-thumb:hover {
+  background-color: #bdc1c6 !important;
+}
+
+/* Fix per problemi di responsive */
+@media (max-width: 600px) {
+  .MuiContainer-root {
+    padding-left: 16px !important;
+    padding-right: 16px !important;
+  }
+  
+  /* Ottimizzazioni per mobile */
+  .MuiButton-root {
+    min-height: 48px !important;
+    font-size: 1rem !important;
+  }
+  
+  .MuiTextField-root {
+    margin-bottom: 16px !important;
+  }
+  
+  .MuiCard-root {
+    margin-bottom: 16px !important;
+  }
+  
+  /* Fix specifici per mobile chatbot */
+  .ai-chatbot-responsive-buttons {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 4px !important;
+  }
+  
+  .ai-chatbot-messages {
+    padding: 8px !important;
+  }
+  
+  .ai-chatbot-input-area {
+    padding: 8px !important;
+  }
+}
+
+/* Breakpoint per tablet */
+@media (min-width: 601px) and (max-width: 960px) {
+  .MuiGrid-item {
+    margin-bottom: 16px !important;
+  }
+  
+  .MuiButton-root {
+    min-height: 44px !important;
+  }
+  
+  /* Fix specifici per tablet chatbot */
+  .ai-chatbot-responsive-buttons {
+    grid-template-columns: repeat(3, 1fr) !important;
+    gap: 6px !important;
+  }
+}
+
+/* Breakpoint per desktop */
+@media (min-width: 961px) and (max-width: 1280px) {
+  .MuiContainer-root {
+    max-width: 1200px !important;
+  }
+  
+  /* Fix specifici per desktop chatbot */
+  .ai-chatbot-responsive-buttons {
+    grid-template-columns: repeat(4, 1fr) !important;
+    gap: 8px !important;
+  }
+}
+
+/* Breakpoint per schermi extra-large */
+@media (min-width: 1281px) {
+  .ai-chatbot-responsive-buttons {
+    grid-template-columns: repeat(6, 1fr) !important;
+    gap: 10px !important;
+  }
+}
+
+/* Fix per z-index e layering */
+.ai-chatbot-dialog {
+  z-index: 1300 !important;
+}
+
+.ai-chatbot-overlay {
+  z-index: 1299 !important;
+}
+
+/* Fix per animazioni e transizioni */
+.ai-chatbot-transition {
+  transition: all 0.3s ease-in-out !important;
+}
+
+/* Fix per focus e accessibility */
+.ai-chatbot-focus-visible {
+  outline: 2px solid #1976d2 !important;
+  outline-offset: 2px !important;
+}
+
+/* Fix per dark mode compatibility */
+@media (prefers-color-scheme: dark) {
+  .ai-chatbot-scrollbar::-webkit-scrollbar-track {
+    background-color: #424242 !important;
+  }
+  
+  .ai-chatbot-scrollbar::-webkit-scrollbar-thumb {
+    background-color: #616161 !important;
+  }
+  
+  .ai-chatbot-scrollbar::-webkit-scrollbar-thumb:hover {
+    background-color: #757575 !important;
+  }
+}
+
+/* Responsive Design per Quick Replies */
+@media (max-width: 600px) {
+  .ai-chatbot-quick-replies {
+    padding: 16px !important;
+    min-height: 100px !important;
+  }
+  
+  .ai-chatbot-quick-replies-container {
+    gap: 8px !important;
+    padding: 4px 0 !important;
+  }
+  
+  .ai-chatbot-quick-replies .MuiChip-root {
+    min-height: 40px !important;
+    padding: 10px 16px !important;
+    font-size: 0.9rem !important;
+    max-width: 250px !important;
+  }
+  
+  .ai-chatbot-quick-replies-title {
+    font-size: 1rem !important;
+    margin-bottom: 12px !important;
+  }
+}
+
+@media (min-width: 601px) and (max-width: 960px) {
+  .ai-chatbot-quick-replies {
+    padding: 20px !important;
+    min-height: 90px !important;
+  }
+  
+  .ai-chatbot-quick-replies-container {
+    gap: 10px !important;
+  }
+  
+  .ai-chatbot-quick-replies .MuiChip-root {
+    max-width: 280px !important;
+  }
+}
+
+@media (min-width: 961px) {
+  .ai-chatbot-quick-replies {
+    padding: 24px !important;
+    min-height: 100px !important;
+  }
+  
+  .ai-chatbot-quick-replies-container {
+    gap: 12px !important;
+  }
+  
+  .ai-chatbot-quick-replies .MuiChip-root {
+    max-width: 300px !important;
+  }
+}
+
+/* CSS per Layout Ultra-Compatto FAQ e AI */
+.ai-chatbot-ultra-compact {
+  padding: 4px !important;
+  margin-bottom: 4px !important;
+}
+
+.ai-chatbot-ultra-compact .MuiButton-root {
+  min-height: 20px !important;
+  max-height: 24px !important;
+  padding: 2px 6px !important;
+  font-size: 0.55rem !important;
+  border-radius: 3px !important;
+  text-transform: none !important;
+  font-weight: 500 !important;
+}
+
+.ai-chatbot-ultra-compact .MuiButton-startIcon {
+  margin-right: 1px !important;
+  font-size: 0.6rem !important;
+}
+
+.ai-chatbot-ultra-compact .MuiGrid-container {
+  gap: 2px !important;
+  padding: 2px !important;
+}
+
+.ai-chatbot-ultra-compact .MuiGrid-item {
+  padding: 1px !important;
+}
+
+/* Responsive Design Ultra-Compatto */
+@media (max-width: 480px) {
+  .ai-chatbot-ultra-compact .MuiGrid-item {
+    flex-basis: 25% !important;
+    max-width: 25% !important;
+  }
+  
+  .ai-chatbot-ultra-compact .MuiButton-root {
+    font-size: 0.5rem !important;
+    padding: 1px 4px !important;
+    min-height: 18px !important;
+    max-height: 22px !important;
+  }
+}
+
+@media (min-width: 481px) and (max-width: 768px) {
+  .ai-chatbot-ultra-compact .MuiGrid-item {
+    flex-basis: 16.666667% !important;
+    max-width: 16.666667% !important;
+  }
+}
+
+@media (min-width: 769px) {
+  .ai-chatbot-ultra-compact .MuiGrid-item {
+    flex-basis: 12.5% !important;
+    max-width: 12.5% !important;
+  }
+}
+
+/* Scrollbar Ultra-Sottile */
+.ai-chatbot-ultra-compact::-webkit-scrollbar {
+  width: 2px !important;
+}
+
+.ai-chatbot-ultra-compact::-webkit-scrollbar-track {
+  background-color: #f8f9fa !important;
+  border-radius: 1px !important;
+}
+
+.ai-chatbot-ultra-compact::-webkit-scrollbar-thumb {
+  background-color: #dee2e6 !important;
+  border-radius: 1px !important;
+}
+
+.ai-chatbot-ultra-compact::-webkit-scrollbar-thumb:hover {
+  background-color: #adb5bd !important;
+}
+
+/* Titoli Ultra-Compatti */
+.ai-chatbot-ultra-compact-title {
+  font-size: 0.6rem !important;
+  font-weight: 600 !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.4px !important;
+  margin-bottom: 2px !important;
+  color: rgba(0, 0, 0, 0.7) !important;
+}
+
+/* CSS per Risposte Rapide Ultra-Compatte */
+.ai-chatbot-quick-replies-ultra-compact {
+  padding: 4px !important;
+  margin-bottom: 4px !important;
+  min-height: 40px !important;
+}
+
+.ai-chatbot-quick-replies-ultra-compact .MuiButton-root {
+  min-height: 20px !important;
+  max-height: 24px !important;
+  padding: 2px 6px !important;
+  font-size: 0.55rem !important;
+  border-radius: 3px !important;
+  text-transform: none !important;
+  font-weight: 500 !important;
+  word-break: break-word !important;
+  white-space: normal !important;
+  text-align: center !important;
+}
+
+.ai-chatbot-quick-replies-ultra-compact .MuiButton-startIcon {
+  margin-right: 1px !important;
+  font-size: 0.6rem !important;
+}
+
+.ai-chatbot-quick-replies-ultra-compact .MuiGrid-container {
+  gap: 2px !important;
+  padding: 2px !important;
+}
+
+.ai-chatbot-quick-replies-ultra-compact .MuiGrid-item {
+  padding: 1px !important;
+}
+
+/* Responsive Design per Risposte Rapide Ultra-Compatte */
+@media (max-width: 480px) {
+  .ai-chatbot-quick-replies-ultra-compact .MuiGrid-item {
+    flex-basis: 25% !important;
+    max-width: 25% !important;
+  }
+  
+  .ai-chatbot-quick-replies-ultra-compact .MuiButton-root {
+    font-size: 0.5rem !important;
+    padding: 1px 4px !important;
+    min-height: 18px !important;
+    max-height: 22px !important;
+  }
+}
+
+@media (min-width: 481px) and (max-width: 768px) {
+  .ai-chatbot-quick-replies-ultra-compact .MuiGrid-item {
+    flex-basis: 16.666667% !important;
+    max-width: 16.666667% !important;
+  }
+}
+
+@media (min-width: 769px) {
+  .ai-chatbot-quick-replies-ultra-compact .MuiGrid-item {
+    flex-basis: 12.5% !important;
+    max-width: 12.5% !important;
+  }
+}
+
+/* Scrollbar Ultra-Sottile per Risposte Rapide */
+.ai-chatbot-quick-replies-ultra-compact::-webkit-scrollbar {
+  width: 2px !important;
+}
+
+.ai-chatbot-quick-replies-ultra-compact::-webkit-scrollbar-track {
+  background-color: #f8f9fa !important;
+  border-radius: 1px !important;
+}
+
+.ai-chatbot-quick-replies-ultra-compact::-webkit-scrollbar-thumb {
+  background-color: #dee2e6 !important;
+  border-radius: 1px !important;
+}
+
+.ai-chatbot-quick-replies-ultra-compact::-webkit-scrollbar-thumb:hover {
+  background-color: #adb5bd !important;
+}
+
+/* Hover Effects per Risposte Rapide */
+.ai-chatbot-quick-replies-ultra-compact .MuiButton-root:hover {
+  background-color: rgba(25, 118, 210, 0.08) !important;
+  color: #1976d2 !important;
+  transform: translateY(-1px) !important;
+  box-shadow: 0 2px 8px rgba(25, 118, 210, 0.3) !important;
+  transition: all 0.2s ease-in-out !important;
+}
+
+/* Animazioni per Risposte Rapide */
+.ai-chatbot-quick-replies-ultra-compact .MuiButton-root {
+  transition: all 0.2s ease-in-out !important;
+}
+
+/* Focus States per Accessibilità */
+.ai-chatbot-quick-replies-ultra-compact .MuiButton-root:focus-visible {
+  outline: 2px solid #1976d2 !important;
+  outline-offset: 2px !important;
+}

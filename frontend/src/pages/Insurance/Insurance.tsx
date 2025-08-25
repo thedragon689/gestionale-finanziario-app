@@ -1,12 +1,12 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import {
   Box,
-  Grid,
-  Typography,
   Container,
+  Typography,
+  Paper,
+  Grid,
   Card,
   CardContent,
-  CardActions,
   Button,
   Chip,
   Table,
@@ -15,884 +15,1074 @@ import {
   TableContainer,
   TableHead,
   TableRow,
-  Paper,
-  IconButton,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
+  TablePagination,
   TextField,
   FormControl,
   InputLabel,
   Select,
   MenuItem,
-  Alert,
-  CircularProgress,
+  InputAdornment,
+  IconButton,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
   Tooltip,
-  Tabs,
-  Tab,
-  List,
-  ListItem,
-  ListItemText,
-  ListItemSecondaryAction,
-  Divider,
-  Accordion,
-  AccordionSummary,
-  AccordionDetails,
 } from '@mui/material';
 import {
+  Security,
+  DirectionsCar,
+  AccountBalance,
+  Warning,
+  Favorite,
+  Search,
   Add,
+  Visibility,
   Edit,
   Delete,
-  Visibility,
-  Warning,
-  CheckCircle,
-  Cancel,
-  ExpandMore,
-  CarRental,
-  Home,
-  Pets,
-  Person,
-  AccountBalance,
-  Description,
-  Upload,
-  Download,
 } from '@mui/icons-material';
 
-import { insuranceService, Insurance, InsuranceClaim, InsuranceDocument } from '../../services/insuranceService';
-
-interface TabPanelProps {
-  children?: React.ReactNode;
-  index: number;
-  value: number;
+interface Insurance {
+  id: string;
+  type: 'auto' | 'pension' | 'risk' | 'life';
+  name: string;
+  customerName: string;
+  customerType: 'individual' | 'business';
+  policyNumber: string;
+  startDate: Date;
+  endDate: Date;
+  premium: number;
+  coverage: number;
+  status: 'active' | 'expired' | 'cancelled' | 'pending';
+  lastPayment: Date;
+  nextPayment: Date;
+  claims: number;
+  totalClaimsAmount: number;
 }
 
-function TabPanel(props: TabPanelProps) {
-  const { children, value, index, ...other } = props;
-
-  return (
-    <div
-      role="tabpanel"
-      hidden={value !== index}
-      id={`insurance-tabpanel-${index}`}
-      aria-labelledby={`insurance-tab-${index}`}
-      {...other}
-    >
-      {value === index && <Box sx={{ py: 2 }}>{children}</Box>}
-    </div>
-  );
-}
-
-const InsurancePage: React.FC = () => {
-  const [insurances, setInsurances] = useState<Insurance[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+const Insurance: React.FC = () => {
+  const [page, setPage] = useState(0);
+  const [rowsPerPage, setRowsPerPage] = useState(10);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [typeFilter, setTypeFilter] = useState<string>('all');
+  const [statusFilter, setStatusFilter] = useState<string>('all');
   const [selectedInsurance, setSelectedInsurance] = useState<Insurance | null>(null);
-  const [insuranceDetailsDialog, setInsuranceDetailsDialog] = useState(false);
-  const [addInsuranceDialog, setAddInsuranceDialog] = useState(false);
-  const [stats, setStats] = useState<any>(null);
-  const [tabValue, setTabValue] = useState(0);
-  const [newInsurance, setNewInsurance] = useState({
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [newPolicyDialogOpen, setNewPolicyDialogOpen] = useState(false);
+  const [newPolicy, setNewPolicy] = useState({
     type: 'auto' as Insurance['type'],
     name: '',
-    provider: '',
+    customerName: '',
+    customerType: 'individual' as 'individual' | 'business',
     policyNumber: '',
     startDate: new Date(),
     endDate: new Date(),
     premium: 0,
-    premiumFrequency: 'yearly' as Insurance['premiumFrequency'],
-    coverage: {
-      amount: 0,
-      currency: 'EUR',
-      details: '',
-    },
-    vehicleInfo: {
-      make: '',
-      model: '',
-      year: 2024,
-      licensePlate: '',
-      vin: '',
-      color: '',
-      engineSize: '',
-      fuelType: 'gasoline' as const,
-    },
-    propertyInfo: {
-      address: '',
-      type: 'house' as const,
-      squareMeters: 0,
-      constructionYear: 2024,
-      propertyValue: 0,
-      securityFeatures: [],
-    },
-    petInfo: {
-      name: '',
-      species: 'dog' as const,
-      breed: '',
-      age: 0,
-      weight: 0,
-      microchipNumber: '',
-    },
-    beneficiaries: [],
+    coverage: 0,
   });
 
-  useEffect(() => {
-    loadData();
-  }, []);
+  const [insurances, setInsurances] = useState<Insurance[]>([
+    // 3 Assicurazioni Auto
+    {
+      id: '1',
+      type: 'auto',
+      name: 'Polizza Auto Completa',
+      customerName: 'Mario Rossi',
+      customerType: 'individual',
+      policyNumber: 'AUTO-001-2024',
+      startDate: new Date('2024-01-01'),
+      endDate: new Date('2024-12-31'),
+      premium: 450,
+      coverage: 50000,
+      status: 'active',
+      lastPayment: new Date('2024-01-01'),
+      nextPayment: new Date('2024-02-01'),
+      claims: 0,
+      totalClaimsAmount: 0,
+    },
+    {
+      id: '2',
+      type: 'auto',
+      name: 'Polizza Auto Business',
+      customerName: 'Tech Solutions SpA',
+      customerType: 'business',
+      policyNumber: 'AUTO-002-2024',
+      startDate: new Date('2024-01-01'),
+      endDate: new Date('2024-12-31'),
+      premium: 1200,
+      coverage: 150000,
+      status: 'active',
+      lastPayment: new Date('2024-01-01'),
+      nextPayment: new Date('2024-02-01'),
+      claims: 1,
+      totalClaimsAmount: 2500,
+    },
+    {
+      id: '3',
+      type: 'auto',
+      name: 'Polizza Auto Famiglia',
+      customerName: 'Giulia Bianchi',
+      customerType: 'individual',
+      policyNumber: 'AUTO-003-2024',
+      startDate: new Date('2024-01-01'),
+      endDate: new Date('2024-12-31'),
+      premium: 680,
+      coverage: 75000,
+      status: 'active',
+      lastPayment: new Date('2024-01-01'),
+      nextPayment: new Date('2024-02-01'),
+      claims: 0,
+      totalClaimsAmount: 0,
+    },
+    // 3 Assicurazioni Pensione
+    {
+      id: '4',
+      type: 'pension',
+      name: 'Piano Pensionistico Individuale',
+      customerName: 'Roberto Ferrari',
+      customerType: 'individual',
+      policyNumber: 'PENS-001-2024',
+      startDate: new Date('2024-01-01'),
+      endDate: new Date('2044-12-31'),
+      premium: 200,
+      coverage: 500000,
+      status: 'active',
+      lastPayment: new Date('2024-01-01'),
+      nextPayment: new Date('2024-02-01'),
+      claims: 0,
+      totalClaimsAmount: 0,
+    },
+    {
+      id: '5',
+      type: 'pension',
+      name: 'Fondo Pensione Aziendale',
+      customerName: 'Construction Company EdilPro',
+      customerType: 'business',
+      policyNumber: 'PENS-002-2024',
+      startDate: new Date('2024-01-01'),
+      endDate: new Date('2044-12-31'),
+      premium: 500,
+      coverage: 2000000,
+      status: 'active',
+      lastPayment: new Date('2024-01-01'),
+      nextPayment: new Date('2024-02-01'),
+      claims: 0,
+      totalClaimsAmount: 0,
+    },
+    {
+      id: '6',
+      type: 'pension',
+      name: 'Piano Pensionistico Libero',
+      customerName: 'Sofia Conti',
+      customerType: 'individual',
+      policyNumber: 'PENS-003-2024',
+      startDate: new Date('2024-01-01'),
+      endDate: new Date('2044-12-31'),
+      premium: 150,
+      coverage: 300000,
+      status: 'active',
+      lastPayment: new Date('2024-01-01'),
+      nextPayment: new Date('2024-02-01'),
+      claims: 0,
+      totalClaimsAmount: 0,
+    },
+    // 3 Assicurazioni di Rischio
+    {
+      id: '7',
+      type: 'risk',
+      name: 'Polizza Responsabilità Civile',
+      customerName: 'Law Firm Studio Legale',
+      customerType: 'business',
+      policyNumber: 'RISK-001-2024',
+      startDate: new Date('2024-01-01'),
+      endDate: new Date('2024-12-31'),
+      premium: 800,
+      coverage: 1000000,
+      status: 'active',
+      lastPayment: new Date('2024-01-01'),
+      nextPayment: new Date('2024-02-01'),
+      claims: 0,
+      totalClaimsAmount: 0,
+    },
+    {
+      id: '8',
+      type: 'risk',
+      name: 'Polizza Infortuni',
+      customerName: 'Marco Neri',
+      customerType: 'individual',
+      policyNumber: 'RISK-002-2024',
+      startDate: new Date('2024-01-01'),
+      endDate: new Date('2024-12-31'),
+      premium: 120,
+      coverage: 100000,
+      status: 'active',
+      lastPayment: new Date('2024-01-01'),
+      nextPayment: new Date('2024-02-01'),
+      claims: 0,
+      totalClaimsAmount: 0,
+    },
+    {
+      id: '9',
+      type: 'risk',
+      name: 'Polizza Cyber Risk',
+      customerName: 'Software House CodeLab',
+      customerType: 'business',
+      policyNumber: 'RISK-003-2024',
+      startDate: new Date('2024-01-01'),
+      endDate: new Date('2024-12-31'),
+      premium: 1500,
+      coverage: 2000000,
+      status: 'active',
+      lastPayment: new Date('2024-01-01'),
+      nextPayment: new Date('2024-02-01'),
+      claims: 0,
+      totalClaimsAmount: 0,
+    },
+    // 4 Assicurazioni Vita
+    {
+      id: '10',
+      type: 'life',
+      name: 'Polizza Vita Mista',
+      customerName: 'Antonio Russo',
+      customerType: 'individual',
+      policyNumber: 'LIFE-001-2024',
+      startDate: new Date('2024-01-01'),
+      endDate: new Date('2044-12-31'),
+      premium: 300,
+      coverage: 300000,
+      status: 'active',
+      lastPayment: new Date('2024-01-01'),
+      nextPayment: new Date('2024-02-01'),
+      claims: 0,
+      totalClaimsAmount: 0,
+    },
+    {
+      id: '11',
+      type: 'life',
+      name: 'Polizza Vita Temporanea',
+      customerName: 'Elena Santini',
+      customerType: 'individual',
+      policyNumber: 'LIFE-002-2024',
+      startDate: new Date('2024-01-01'),
+      endDate: new Date('2044-12-31'),
+      premium: 180,
+      coverage: 200000,
+      status: 'active',
+      lastPayment: new Date('2024-01-01'),
+      nextPayment: new Date('2024-02-01'),
+      claims: 0,
+      totalClaimsAmount: 0,
+    },
+    {
+      id: '12',
+      type: 'life',
+      name: 'Polizza Vita Universale',
+      customerName: 'Giuseppe Romano',
+      customerType: 'individual',
+      policyNumber: 'LIFE-003-2024',
+      startDate: new Date('2024-01-01'),
+      endDate: new Date('2044-12-31'),
+      premium: 400,
+      coverage: 500000,
+      status: 'active',
+      lastPayment: new Date('2024-01-01'),
+      nextPayment: new Date('2024-02-01'),
+      claims: 0,
+      totalClaimsAmount: 0,
+    },
+    {
+      id: '13',
+      type: 'life',
+      name: 'Polizza Vita Aziendale',
+      customerName: 'Hotel Luxury Palace',
+      customerType: 'business',
+      policyNumber: 'LIFE-004-2024',
+      startDate: new Date('2024-01-01'),
+      endDate: new Date('2044-12-31'),
+      premium: 600,
+      coverage: 1000000,
+      status: 'active',
+      lastPayment: new Date('2024-01-01'),
+      nextPayment: new Date('2024-02-01'),
+      claims: 0,
+      totalClaimsAmount: 0,
+    },
+  ]);
 
-  const loadData = async () => {
-    try {
-      setLoading(true);
-      const [insurancesData, statsData] = await Promise.all([
-        insuranceService.getInsurances(),
-        insuranceService.getInsuranceStats(),
-      ]);
-      setInsurances(insurancesData);
-      setStats(statsData);
-      setError(null);
-    } catch (err) {
-      setError('Errore nel caricamento delle assicurazioni');
-      console.error('Failed to load insurances:', err);
-    } finally {
-      setLoading(false);
+  const getInsuranceIcon = (type: Insurance['type']) => {
+    switch (type) {
+      case 'auto':
+        return <DirectionsCar color="primary" />;
+      case 'pension':
+        return <AccountBalance color="success" />;
+      case 'risk':
+        return <Warning color="warning" />;
+      case 'life':
+        return <Favorite color="error" />;
+      default:
+        return <Security />;
     }
   };
 
-  const handleViewInsurance = (insurance: Insurance) => {
-    setSelectedInsurance(insurance);
-    setInsuranceDetailsDialog(true);
-  };
-
-  const handleAddInsurance = async () => {
-    try {
-      await insuranceService.createInsurance(newInsurance);
-      setAddInsuranceDialog(false);
-      setNewInsurance({
-        type: 'auto',
-        name: '',
-        provider: '',
-        policyNumber: '',
-        startDate: new Date(),
-        endDate: new Date(),
-        premium: 0,
-        premiumFrequency: 'yearly',
-        coverage: {
-          amount: 0,
-          currency: 'EUR',
-          details: '',
-        },
-        vehicleInfo: {
-          make: '',
-          model: '',
-          year: 2024,
-          licensePlate: '',
-          vin: '',
-          color: '',
-          engineSize: '',
-          fuelType: 'gasoline',
-        },
-        propertyInfo: {
-          address: '',
-          type: 'house',
-          squareMeters: 0,
-          constructionYear: 2024,
-          propertyValue: 0,
-          securityFeatures: [],
-        },
-        petInfo: {
-          name: '',
-          species: 'dog',
-          breed: '',
-          age: 0,
-          weight: 0,
-          microchipNumber: '',
-        },
-        beneficiaries: [],
-      });
-      await loadData();
-    } catch (err) {
-      console.error('Failed to add insurance:', err);
+  const getStatusColor = (status: Insurance['status']) => {
+    switch (status) {
+      case 'active':
+        return 'success';
+      case 'expired':
+        return 'warning';
+      case 'cancelled':
+        return 'error';
+      case 'pending':
+        return 'info';
+      default:
+        return 'default';
     }
   };
 
   const getTypeLabel = (type: Insurance['type']) => {
-    const labels: Record<Insurance['type'], string> = {
-      auto: 'Auto',
-      home: 'Casa',
-      pet: 'Animale',
-      life: 'Vita',
-      pension: 'Pensione',
-      health: 'Salute',
-      travel: 'Viaggio',
+    switch (type) {
+      case 'auto':
+        return 'Auto';
+      case 'pension':
+        return 'Pensione';
+      case 'risk':
+        return 'Rischio';
+      case 'life':
+        return 'Vita';
+      default:
+        return type;
+    }
+  };
+
+  const filteredInsurances = insurances.filter((insurance) => {
+    const matchesSearch = insurance.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         insurance.customerName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         insurance.policyNumber.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesType = typeFilter === 'all' || insurance.type === typeFilter;
+    const matchesStatus = statusFilter === 'all' || insurance.status === statusFilter;
+    
+    return matchesSearch && matchesType && matchesStatus;
+  });
+
+  const paginatedInsurances = filteredInsurances.slice(
+    page * rowsPerPage,
+    page * rowsPerPage + rowsPerPage
+  );
+
+  const stats = {
+    total: insurances.length,
+    auto: insurances.filter(i => i.type === 'auto').length,
+    pension: insurances.filter(i => i.type === 'pension').length,
+    risk: insurances.filter(i => i.type === 'risk').length,
+    life: insurances.filter(i => i.type === 'life').length,
+    active: insurances.filter(i => i.status === 'active').length,
+    totalPremium: insurances.reduce((sum, i) => sum + i.premium, 0),
+    totalCoverage: insurances.reduce((sum, i) => sum + i.coverage, 0),
+  };
+
+  const handleViewInsurance = (insurance: Insurance) => {
+    setSelectedInsurance(insurance);
+    setDialogOpen(true);
+  };
+
+  const handleCreateNewPolicy = () => {
+    const today = new Date();
+    const nextYear = new Date(today.getFullYear() + 1, today.getMonth(), today.getDate());
+    
+    setNewPolicy({
+      type: 'auto',
+      name: '',
+      customerName: '',
+      customerType: 'individual',
+      policyNumber: '',
+      startDate: today,
+      endDate: nextYear,
+      premium: 0,
+      coverage: 0,
+    });
+    setNewPolicyDialogOpen(true);
+  };
+
+  const handleSaveNewPolicy = () => {
+    // Genera un nuovo ID
+    const newId = (insurances.length + 1).toString();
+    
+    // Genera un numero di polizza automatico
+    const policyNumber = `${newPolicy.type.toUpperCase()}-${String(newId).padStart(3, '0')}-${new Date().getFullYear()}`;
+    
+    // Crea la nuova polizza
+    const newInsurance: Insurance = {
+      id: newId,
+      type: newPolicy.type,
+      name: newPolicy.name,
+      customerName: newPolicy.customerName,
+      customerType: newPolicy.customerType,
+      policyNumber: policyNumber,
+      startDate: newPolicy.startDate,
+      endDate: newPolicy.endDate,
+      premium: newPolicy.premium,
+      coverage: newPolicy.coverage,
+      status: 'active',
+      lastPayment: new Date(),
+      nextPayment: new Date(newPolicy.startDate.getTime() + 30 * 24 * 60 * 60 * 1000), // +30 giorni
+      claims: 0,
+      totalClaimsAmount: 0,
     };
-    return labels[type];
+
+    // Aggiungi alla lista usando setState
+    setInsurances(prevInsurances => [...prevInsurances, newInsurance]);
+    
+    // Chiudi il dialog e resetta il form
+    setNewPolicyDialogOpen(false);
+    const today = new Date();
+    const nextYear = new Date(today.getFullYear() + 1, today.getMonth(), today.getDate());
+    
+    setNewPolicy({
+      type: 'auto',
+      name: '',
+      customerName: '',
+      customerType: 'individual',
+      policyNumber: '',
+      startDate: today,
+      endDate: nextYear,
+      premium: 0,
+      coverage: 0,
+    });
   };
 
-  const getTypeIcon = (type: Insurance['type']) => {
-    const icons: Record<Insurance['type'], React.ReactNode> = {
-      auto: <CarRental />,
-      home: <Home />,
-      pet: <Pets />,
-      life: <Person />,
-      pension: <AccountBalance />,
-      health: <Person />,
-      travel: <Person />,
-    };
-    return icons[type];
+  const generatePolicyNumber = (type: Insurance['type']) => {
+    const count = insurances.filter(i => i.type === type).length + 1;
+    return `${type.toUpperCase()}-${String(count).padStart(3, '0')}-${new Date().getFullYear()}`;
   };
-
-  const getStatusColor = (status: Insurance['status']) => {
-    const colors: Record<Insurance['status'], 'success' | 'warning' | 'error' | 'default'> = {
-      active: 'success',
-      expired: 'warning',
-      cancelled: 'error',
-      pending: 'default',
-    };
-    return colors[status];
-  };
-
-  const getStatusIcon = (status: Insurance['status']) => {
-    const icons: Record<Insurance['status'], React.ReactNode> = {
-      active: <CheckCircle />,
-      expired: <Warning />,
-      cancelled: <Cancel />,
-      pending: <Warning />,
-    };
-    return icons[status];
-  };
-
-  const formatCurrency = (amount: number, currency: string) => {
-    return new Intl.NumberFormat('it-IT', {
-      style: 'currency',
-      currency: currency,
-    }).format(amount);
-  };
-
-  const formatDate = (date: Date) => {
-    return new Intl.DateTimeFormat('it-IT', {
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric',
-    }).format(date);
-  };
-
-  const getInsurancesByType = (type: Insurance['type']) => {
-    return insurances.filter(insurance => insurance.type === type);
-  };
-
-  const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
-    setTabValue(newValue);
-  };
-
-  if (loading) {
-    return (
-      <Container maxWidth="xl">
-        <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
-          <CircularProgress />
-        </Box>
-      </Container>
-    );
-  }
-
-  if (error) {
-    return (
-      <Container maxWidth="xl">
-        <Alert severity="error" sx={{ mt: 2 }}>
-          {error}
-        </Alert>
-      </Container>
-    );
-  }
 
   return (
     <Container maxWidth="xl">
       <Box sx={{ py: 3 }}>
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-          <Typography variant="h4" gutterBottom fontWeight="bold">
-            Gestione Assicurazioni
-          </Typography>
-          <Button
-            variant="contained"
-            startIcon={<Add />}
-            onClick={() => setAddInsuranceDialog(true)}
-          >
-            Nuova Assicurazione
-          </Button>
-        </Box>
+        <Typography variant="h4" gutterBottom fontWeight="bold">
+          Gestione Assicurazioni
+        </Typography>
 
-        {/* Statistics Cards */}
-        {stats && (
-          <Grid container spacing={3} sx={{ mb: 4 }}>
-            <Grid item xs={12} sm={6} md={3}>
-              <Card>
-                <CardContent>
-                  <Typography color="textSecondary" gutterBottom>
-                    Totale Assicurazioni
-                  </Typography>
-                  <Typography variant="h4">
-                    {stats.totalInsurances}
-                  </Typography>
-                </CardContent>
-              </Card>
+        {/* Insurance Overview Cards */}
+        <Grid container spacing={3} sx={{ mb: 4 }}>
+          <Grid item xs={12} sm={6} md={3}>
+            <Card>
+              <CardContent>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
+                  <DirectionsCar color="primary" />
+                  <Typography color="textSecondary">Auto</Typography>
+                </Box>
+                <Typography variant="h4" fontWeight="bold" color="primary.main">
+                  {stats.auto}
+                </Typography>
+                <Typography variant="body2" color="textSecondary">
+                  Polizze Attive
+                </Typography>
+              </CardContent>
+            </Card>
+          </Grid>
+          <Grid item xs={12} sm={6} md={3}>
+            <Card>
+              <CardContent>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
+                  <AccountBalance color="success" />
+                  <Typography color="textSecondary">Pensione</Typography>
+                </Box>
+                <Typography variant="h4" fontWeight="bold" color="success.main">
+                  {stats.pension}
+                </Typography>
+                <Typography variant="body2" color="textSecondary">
+                  Piani Attivi
+                </Typography>
+              </CardContent>
+            </Card>
+          </Grid>
+          <Grid item xs={12} sm={6} md={3}>
+            <Card>
+              <CardContent>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
+                  <Warning color="warning" />
+                  <Typography color="textSecondary">Rischio</Typography>
+                </Box>
+                <Typography variant="h4" fontWeight="bold" color="warning.main">
+                  {stats.risk}
+                </Typography>
+                <Typography variant="body2" color="textSecondary">
+                  Polizze Attive
+                </Typography>
+              </CardContent>
+            </Card>
+          </Grid>
+          <Grid item xs={12} sm={6} md={3}>
+            <Card>
+              <CardContent>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
+                  <Favorite color="error" />
+                  <Typography color="textSecondary">Vita</Typography>
+                </Box>
+                <Typography variant="h4" fontWeight="bold" color="error.main">
+                  {stats.life}
+                </Typography>
+                <Typography variant="body2" color="textSecondary">
+                  Polizze Attive
+                </Typography>
+              </CardContent>
+            </Card>
+          </Grid>
+        </Grid>
+
+        {/* Financial Summary */}
+        <Grid container spacing={3} sx={{ mb: 4 }}>
+          <Grid item xs={12} md={6}>
+            <Card>
+              <CardContent>
+                <Typography variant="h6" gutterBottom>
+                  Riepilogo Finanziario
+                </Typography>
+                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                  <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+                    <Typography>Premi Totali:</Typography>
+                    <Typography fontWeight="bold" color="primary.main">
+                      €{stats.totalPremium.toLocaleString()}/mese
+                    </Typography>
+                  </Box>
+                  <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+                    <Typography>Copertura Totale:</Typography>
+                    <Typography fontWeight="bold" color="success.main">
+                      €{stats.totalCoverage.toLocaleString()}
+                    </Typography>
+                  </Box>
+                  <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+                    <Typography>Polizze Attive:</Typography>
+                    <Typography fontWeight="bold" color="info.main">
+                      {stats.active}/{stats.total}
+                    </Typography>
+                  </Box>
+                </Box>
+              </CardContent>
+            </Card>
+          </Grid>
+          <Grid item xs={12} md={6}>
+            <Card>
+              <CardContent>
+                <Typography variant="h6" gutterBottom>
+                  Distribuzione per Tipo
+                </Typography>
+                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                  <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+                    <Typography>Auto:</Typography>
+                    <Typography fontWeight="bold">{stats.auto} polizze</Typography>
+                  </Box>
+                  <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+                    <Typography>Pensione:</Typography>
+                    <Typography fontWeight="bold">{stats.pension} piani</Typography>
+                  </Box>
+                  <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+                    <Typography>Rischio:</Typography>
+                    <Typography fontWeight="bold">{stats.risk} polizze</Typography>
+                  </Box>
+                  <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+                    <Typography>Vita:</Typography>
+                    <Typography fontWeight="bold">{stats.life} polizze</Typography>
+                  </Box>
+                </Box>
+              </CardContent>
+            </Card>
+          </Grid>
+        </Grid>
+
+        {/* Filters - Responsive Design */}
+        <Paper sx={{ p: 3, mb: 3 }}>
+          <Grid container spacing={2} alignItems="center">
+            {/* Search Field - Full width on mobile */}
+            <Grid item xs={12} md={4}>
+              <TextField
+                fullWidth
+                placeholder="Cerca assicurazioni..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <Search />
+                    </InputAdornment>
+                  ),
+                }}
+                sx={{
+                  '& .MuiInputBase-root': {
+                    height: { xs: 56, md: 40 }, // Taller on mobile for better touch
+                  }
+                }}
+              />
             </Grid>
-            <Grid item xs={12} sm={6} md={3}>
-              <Card>
-                <CardContent>
-                  <Typography color="textSecondary" gutterBottom>
-                    Premio Totale
-                  </Typography>
-                  <Typography variant="h4">
-                    {formatCurrency(stats.totalPremium, 'EUR')}
-                  </Typography>
-                </CardContent>
-              </Card>
+            
+            {/* Type Filter - Responsive width */}
+            <Grid item xs={6} md={3}>
+              <FormControl fullWidth>
+                <InputLabel>Tipo</InputLabel>
+                <Select
+                  value={typeFilter}
+                  label="Tipo"
+                  onChange={(e) => setTypeFilter(e.target.value)}
+                  sx={{
+                    '& .MuiInputBase-root': {
+                      height: { xs: 56, md: 40 },
+                    }
+                  }}
+                >
+                  <MenuItem value="all">Tutti i Tipi</MenuItem>
+                  <MenuItem value="auto">Auto</MenuItem>
+                  <MenuItem value="pension">Pensione</MenuItem>
+                  <MenuItem value="risk">Rischio</MenuItem>
+                  <MenuItem value="life">Vita</MenuItem>
+                </Select>
+              </FormControl>
             </Grid>
-            <Grid item xs={12} sm={6} md={3}>
-              <Card>
-                <CardContent>
-                  <Typography color="textSecondary" gutterBottom>
-                    Copertura Totale
-                  </Typography>
-                  <Typography variant="h4">
-                    {formatCurrency(stats.totalCoverage, 'EUR')}
-                  </Typography>
-                </CardContent>
-              </Card>
+            
+            {/* Status Filter - Responsive width */}
+            <Grid item xs={6} md={3}>
+              <FormControl fullWidth>
+                <InputLabel>Stato</InputLabel>
+                <Select
+                  value={statusFilter}
+                  label="Stato"
+                  onChange={(e) => setStatusFilter(e.target.value)}
+                  sx={{
+                    '& .MuiInputBase-root': {
+                      height: { xs: 56, md: 40 },
+                    }
+                  }}
+                >
+                  <MenuItem value="all">Tutti gli Stati</MenuItem>
+                  <MenuItem value="active">Attive</MenuItem>
+                  <MenuItem value="expired">Scadute</MenuItem>
+                  <MenuItem value="cancelled">Cancellate</MenuItem>
+                  <MenuItem value="pending">In Attesa</MenuItem>
+                </Select>
+              </FormControl>
             </Grid>
-            <Grid item xs={12} sm={6} md={3}>
-              <Card>
-                <CardContent>
-                  <Typography color="textSecondary" gutterBottom>
-                    Scadenza Prossima
-                  </Typography>
-                  <Typography variant="h4" color="warning.main">
-                    {stats.expiringSoon}
-                  </Typography>
-                </CardContent>
-              </Card>
+            
+            {/* New Policy Button - Responsive width */}
+            <Grid item xs={12} md={2}>
+              <Button
+                fullWidth
+                variant="contained"
+                startIcon={<Add />}
+                sx={{ 
+                  py: { xs: 2, md: 1.5 }, // Taller on mobile
+                  height: { xs: 56, md: 40 },
+                  fontSize: { xs: '1rem', md: '0.875rem' }
+                }}
+                onClick={handleCreateNewPolicy}
+              >
+                Nuova Polizza
+              </Button>
             </Grid>
           </Grid>
-        )}
+        </Paper>
 
-        {/* Insurance Tabs */}
-        <Card>
-          <CardContent>
-            <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
-              <Tabs value={tabValue} onChange={handleTabChange} aria-label="insurance tabs">
-                <Tab label={`Auto (${getInsurancesByType('auto').length})`} />
-                <Tab label={`Casa (${getInsurancesByType('home').length})`} />
-                <Tab label={`Animali (${getInsurancesByType('pet').length})`} />
-                <Tab label={`Vita (${getInsurancesByType('life').length})`} />
-                <Tab label={`Pensione (${getInsurancesByType('pension').length})`} />
-                <Tab label={`Tutte (${insurances.length})`} />
-              </Tabs>
+        {/* Insurance Table - Responsive Design */}
+        <Paper>
+          {/* Desktop Table View */}
+          <Box sx={{ display: { xs: 'none', md: 'block' } }}>
+            <TableContainer>
+              <Table>
+                <TableHead>
+                  <TableRow>
+                    <TableCell>Polizza</TableCell>
+                    <TableCell>Cliente</TableCell>
+                    <TableCell>Tipo</TableCell>
+                    <TableCell>Premio</TableCell>
+                    <TableCell>Copertura</TableCell>
+                    <TableCell>Stato</TableCell>
+                    <TableCell>Prossimo Pagamento</TableCell>
+                    <TableCell>Azioni</TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {paginatedInsurances.map((insurance) => (
+                    <TableRow key={insurance.id} hover>
+                      <TableCell>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                          <Box sx={{ color: 'primary.main' }}>
+                            {getInsuranceIcon(insurance.type)}
+                          </Box>
+                          <Box>
+                            <Typography variant="body2" fontWeight="medium">
+                              {insurance.name}
+                            </Typography>
+                            <Typography variant="caption" color="textSecondary">
+                              {insurance.policyNumber}
+                            </Typography>
+                          </Box>
+                        </Box>
+                      </TableCell>
+                      <TableCell>
+                        <Box>
+                          <Typography variant="body2" fontWeight="medium">
+                            {insurance.customerName}
+                          </Typography>
+                          <Typography variant="caption" color="textSecondary">
+                            {insurance.customerType === 'individual' ? 'Privato' : 'Azienda'}
+                          </Typography>
+                        </Box>
+                      </TableCell>
+                      <TableCell>
+                        <Chip
+                          label={getTypeLabel(insurance.type)}
+                          color="primary"
+                          size="small"
+                          icon={getInsuranceIcon(insurance.type)}
+                        />
+                      </TableCell>
+                      <TableCell>
+                        <Typography variant="body2" fontWeight="bold" color="primary.main">
+                          €{insurance.premium.toLocaleString()}
+                        </Typography>
+                      </TableCell>
+                      <TableCell>
+                        <Typography variant="body2" fontWeight="bold" color="success.main">
+                          €{insurance.coverage.toLocaleString()}
+                        </Typography>
+                      </TableCell>
+                      <TableCell>
+                        <Chip
+                          label={insurance.status === 'active' ? 'Attiva' : 
+                                 insurance.status === 'expired' ? 'Scaduta' :
+                                 insurance.status === 'cancelled' ? 'Cancellata' : 'In Attesa'}
+                          color={getStatusColor(insurance.status) as any}
+                          size="small"
+                        />
+                      </TableCell>
+                      <TableCell>
+                        <Typography variant="body2" color="textSecondary">
+                          {insurance.nextPayment.toLocaleDateString('it-IT')}
+                        </Typography>
+                      </TableCell>
+                      <TableCell>
+                        <Box sx={{ display: 'flex', gap: 1 }}>
+                          <Tooltip title="Visualizza Dettagli">
+                            <IconButton
+                              size="small"
+                              onClick={() => handleViewInsurance(insurance)}
+                              color="primary"
+                            >
+                              <Visibility />
+                            </IconButton>
+                          </Tooltip>
+                        </Box>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </TableContainer>
+          </Box>
+
+          {/* Mobile Card View */}
+          <Box sx={{ display: { xs: 'block', md: 'none' } }}>
+            <Box sx={{ p: 2 }}>
+              {paginatedInsurances.map((insurance) => (
+                <Card key={insurance.id} sx={{ mb: 2, p: 2 }}>
+                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 2 }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                      <Box sx={{ color: 'primary.main' }}>
+                        {getInsuranceIcon(insurance.type)}
+                      </Box>
+                      <Box>
+                        <Typography variant="h6" fontWeight="medium">
+                          {insurance.name}
+                        </Typography>
+                        <Typography variant="caption" color="textSecondary">
+                          {insurance.policyNumber}
+                        </Typography>
+                      </Box>
+                    </Box>
+                    <Chip
+                      label={insurance.status === 'active' ? 'Attiva' : 
+                             insurance.status === 'expired' ? 'Scaduta' :
+                             insurance.status === 'cancelled' ? 'Cancellata' : 'In Attesa'}
+                      color={getStatusColor(insurance.status) as any}
+                      size="small"
+                    />
+                  </Box>
+                  
+                  <Grid container spacing={2} sx={{ mb: 2 }}>
+                    <Grid item xs={6}>
+                      <Typography variant="caption" color="textSecondary">Cliente</Typography>
+                      <Typography variant="body2" fontWeight="medium">
+                        {insurance.customerName}
+                      </Typography>
+                      <Typography variant="caption" color="textSecondary">
+                        {insurance.customerType === 'individual' ? 'Privato' : 'Azienda'}
+                      </Typography>
+                    </Grid>
+                    <Grid item xs={6}>
+                      <Typography variant="caption" color="textSecondary">Tipo</Typography>
+                      <Chip
+                        label={getTypeLabel(insurance.type)}
+                        color="primary"
+                        size="small"
+                        sx={{ mt: 0.5 }}
+                      />
+                    </Grid>
+                    <Grid item xs={6}>
+                      <Typography variant="caption" color="textSecondary">Premio</Typography>
+                      <Typography variant="body2" fontWeight="bold" color="primary.main">
+                        €{insurance.premium.toLocaleString()}
+                      </Typography>
+                    </Grid>
+                    <Grid item xs={6}>
+                      <Typography variant="caption" color="textSecondary">Copertura</Typography>
+                      <Typography variant="body2" fontWeight="bold" color="success.main">
+                        €{insurance.coverage.toLocaleString()}
+                      </Typography>
+                    </Grid>
+                    <Grid item xs={12}>
+                      <Typography variant="caption" color="textSecondary">Prossimo Pagamento</Typography>
+                      <Typography variant="body2" color="textSecondary">
+                        {insurance.nextPayment.toLocaleDateString('it-IT')}
+                      </Typography>
+                    </Grid>
+                  </Grid>
+                  
+                  <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
+                    <Button
+                      variant="outlined"
+                      size="small"
+                      startIcon={<Visibility />}
+                      onClick={() => handleViewInsurance(insurance)}
+                    >
+                      Dettagli
+                    </Button>
+                  </Box>
+                </Card>
+              ))}
             </Box>
-
-            <TabPanel value={tabValue} index={0}>
-              <InsuranceTable insurances={getInsurancesByType('auto')} onView={handleViewInsurance} />
-            </TabPanel>
-            <TabPanel value={tabValue} index={1}>
-              <InsuranceTable insurances={getInsurancesByType('home')} onView={handleViewInsurance} />
-            </TabPanel>
-            <TabPanel value={tabValue} index={2}>
-              <InsuranceTable insurances={getInsurancesByType('pet')} onView={handleViewInsurance} />
-            </TabPanel>
-            <TabPanel value={tabValue} index={3}>
-              <InsuranceTable insurances={getInsurancesByType('life')} onView={handleViewInsurance} />
-            </TabPanel>
-            <TabPanel value={tabValue} index={4}>
-              <InsuranceTable insurances={getInsurancesByType('pension')} onView={handleViewInsurance} />
-            </TabPanel>
-            <TabPanel value={tabValue} index={5}>
-              <InsuranceTable insurances={insurances} onView={handleViewInsurance} />
-            </TabPanel>
-          </CardContent>
-        </Card>
+          </Box>
+          {/* Pagination */}
+          <TablePagination
+            rowsPerPageOptions={[5, 10, 25]}
+            component="div"
+            count={filteredInsurances.length}
+            rowsPerPage={rowsPerPage}
+            page={page}
+            onPageChange={(e, newPage) => setPage(newPage)}
+            onRowsPerPageChange={(e) => {
+              setRowsPerPage(parseInt(e.target.value, 10));
+              setPage(0);
+            }}
+            labelRowsPerPage="Righe per pagina:"
+            labelDisplayedRows={({ from, to, count }) =>
+              `${from}-${to} di ${count !== -1 ? count : `più di ${to}`}`
+            }
+          />
+        </Paper>
 
         {/* Insurance Details Dialog */}
-        <Dialog
-          open={insuranceDetailsDialog}
-          onClose={() => setInsuranceDetailsDialog(false)}
-          maxWidth="lg"
-          fullWidth
-        >
+        <Dialog open={dialogOpen} onClose={() => setDialogOpen(false)} maxWidth="md" fullWidth>
           <DialogTitle>
-            Dettagli Assicurazione: {selectedInsurance?.name}
+            Dettagli Polizza - {selectedInsurance?.name}
           </DialogTitle>
           <DialogContent>
             {selectedInsurance && (
               <Grid container spacing={3} sx={{ mt: 1 }}>
                 <Grid item xs={12} md={6}>
-                  <Card>
-                    <CardContent>
-                      <Typography variant="h6" gutterBottom>
-                        Informazioni Generali
-                      </Typography>
-                      <Box sx={{ mb: 2 }}>
-                        <Typography variant="body2" color="textSecondary">
-                          Fornitore: {selectedInsurance.provider}
-                        </Typography>
-                        <Typography variant="body2" color="textSecondary">
-                          Numero Polizza: {selectedInsurance.policyNumber}
-                        </Typography>
-                        <Typography variant="body2" color="textSecondary">
-                          Data Inizio: {formatDate(selectedInsurance.startDate)}
-                        </Typography>
-                        <Typography variant="body2" color="textSecondary">
-                          Data Fine: {formatDate(selectedInsurance.endDate)}
-                        </Typography>
-                        <Typography variant="body2" color="textSecondary">
-                          Premio: {formatCurrency(selectedInsurance.premium, selectedInsurance.coverage.currency)}
-                        </Typography>
-                        <Typography variant="body2" color="textSecondary">
-                          Frequenza: {selectedInsurance.premiumFrequency === 'monthly' ? 'Mensile' : 
-                                     selectedInsurance.premiumFrequency === 'quarterly' ? 'Trimestrale' : 'Annuale'}
-                        </Typography>
-                        <Typography variant="body2" color="textSecondary">
-                          Copertura: {formatCurrency(selectedInsurance.coverage.amount, selectedInsurance.coverage.currency)}
-                        </Typography>
-                      </Box>
-                      <Typography variant="body2">
-                        {selectedInsurance.coverage.details}
-                      </Typography>
-                    </CardContent>
-                  </Card>
+                  <Typography variant="h6" gutterBottom>
+                    Informazioni Polizza
+                  </Typography>
+                  <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                    <Box>
+                      <Typography variant="body2" color="textSecondary">Nome Polizza</Typography>
+                      <Typography variant="body1">{selectedInsurance.name}</Typography>
+                    </Box>
+                    <Box>
+                      <Typography variant="body2" color="textSecondary">Numero Polizza</Typography>
+                      <Typography variant="body1" fontFamily="monospace">{selectedInsurance.policyNumber}</Typography>
+                    </Box>
+                    <Box>
+                      <Typography variant="body2" color="textSecondary">Tipo</Typography>
+                      <Chip
+                        label={getTypeLabel(selectedInsurance.type)}
+                        size="small"
+                      />
+                    </Box>
+                    <Box>
+                      <Typography variant="body2" color="textSecondary">Stato</Typography>
+                      <Chip
+                        label={selectedInsurance.status}
+                        color={getStatusColor(selectedInsurance.status) as any}
+                        size="small"
+                      />
+                    </Box>
+                  </Box>
                 </Grid>
-
                 <Grid item xs={12} md={6}>
-                  <Card>
-                    <CardContent>
-                      <Typography variant="h6" gutterBottom>
-                        Dettagli Specifici
+                  <Typography variant="h6" gutterBottom>
+                    Informazioni Finanziarie
+                  </Typography>
+                  <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                    <Box>
+                      <Typography variant="body2" color="textSecondary">Premio Mensile</Typography>
+                      <Typography variant="h5" color="primary.main" fontWeight="bold">
+                        €{selectedInsurance.premium.toLocaleString()}
                       </Typography>
-                      {selectedInsurance.type === 'auto' && selectedInsurance.vehicleInfo && (
-                        <Box>
-                          <Typography variant="body2" color="textSecondary">
-                            Marca: {selectedInsurance.vehicleInfo.make}
-                          </Typography>
-                          <Typography variant="body2" color="textSecondary">
-                            Modello: {selectedInsurance.vehicleInfo.model}
-                          </Typography>
-                          <Typography variant="body2" color="textSecondary">
-                            Anno: {selectedInsurance.vehicleInfo.year}
-                          </Typography>
-                          <Typography variant="body2" color="textSecondary">
-                            Targa: {selectedInsurance.vehicleInfo.licensePlate}
-                          </Typography>
-                          <Typography variant="body2" color="textSecondary">
-                            Colore: {selectedInsurance.vehicleInfo.color}
-                          </Typography>
-                        </Box>
-                      )}
-                      {selectedInsurance.type === 'home' && selectedInsurance.propertyInfo && (
-                        <Box>
-                          <Typography variant="body2" color="textSecondary">
-                            Indirizzo: {selectedInsurance.propertyInfo.address}
-                          </Typography>
-                          <Typography variant="body2" color="textSecondary">
-                            Tipo: {selectedInsurance.propertyInfo.type}
-                          </Typography>
-                          <Typography variant="body2" color="textSecondary">
-                            Metri Quadri: {selectedInsurance.propertyInfo.squareMeters}
-                          </Typography>
-                          <Typography variant="body2" color="textSecondary">
-                            Anno Costruzione: {selectedInsurance.propertyInfo.constructionYear}
-                          </Typography>
-                        </Box>
-                      )}
-                      {selectedInsurance.type === 'pet' && selectedInsurance.petInfo && (
-                        <Box>
-                          <Typography variant="body2" color="textSecondary">
-                            Nome: {selectedInsurance.petInfo.name}
-                          </Typography>
-                          <Typography variant="body2" color="textSecondary">
-                            Specie: {selectedInsurance.petInfo.species}
-                          </Typography>
-                          <Typography variant="body2" color="textSecondary">
-                            Razza: {selectedInsurance.petInfo.breed}
-                          </Typography>
-                          <Typography variant="body2" color="textSecondary">
-                            Età: {selectedInsurance.petInfo.age} anni
-                          </Typography>
-                        </Box>
-                      )}
-                      {selectedInsurance.beneficiaries && selectedInsurance.beneficiaries.length > 0 && (
-                        <Box sx={{ mt: 2 }}>
-                          <Typography variant="subtitle2" gutterBottom>
-                            Beneficiari:
-                          </Typography>
-                          {selectedInsurance.beneficiaries.map((beneficiary, index) => (
-                            <Typography key={index} variant="body2" color="textSecondary">
-                              • {beneficiary}
-                            </Typography>
-                          ))}
-                        </Box>
-                      )}
-                    </CardContent>
-                  </Card>
-                </Grid>
-
-                <Grid item xs={12}>
-                  <Card>
-                    <CardContent>
-                      <Typography variant="h6" gutterBottom>
-                        Documenti
+                    </Box>
+                    <Box>
+                      <Typography variant="body2" color="textSecondary">Copertura</Typography>
+                      <Typography variant="h5" color="success.main" fontWeight="bold">
+                        €{selectedInsurance.coverage.toLocaleString()}
                       </Typography>
-                      <List>
-                        {selectedInsurance.documents.map((document) => (
-                          <ListItem key={document.id}>
-                            <ListItemText
-                              primary={document.name}
-                              secondary={`${document.type} - ${formatDate(document.uploadDate)}`}
-                            />
-                            <ListItemSecondaryAction>
-                              <IconButton size="small">
-                                <Download />
-                              </IconButton>
-                            </ListItemSecondaryAction>
-                          </ListItem>
-                        ))}
-                      </List>
-                    </CardContent>
-                  </Card>
-                </Grid>
-
-                <Grid item xs={12}>
-                  <Card>
-                    <CardContent>
-                      <Typography variant="h6" gutterBottom>
-                        Sinistri
+                    </Box>
+                    <Box>
+                      <Typography variant="body2" color="textSecondary">Prossimo Pagamento</Typography>
+                      <Typography variant="body1">
+                        {selectedInsurance.nextPayment.toLocaleDateString()}
                       </Typography>
-                      {selectedInsurance.claims.length > 0 ? (
-                        <List>
-                          {selectedInsurance.claims.map((claim) => (
-                            <ListItem key={claim.id}>
-                              <ListItemText
-                                primary={claim.description}
-                                secondary={`${formatDate(claim.date)} - ${formatCurrency(claim.amount, selectedInsurance.coverage.currency)}`}
-                              />
-                              <ListItemSecondaryAction>
-                                <Chip
-                                  label={claim.status === 'pending' ? 'In Attesa' : 
-                                         claim.status === 'approved' ? 'Approvato' :
-                                         claim.status === 'rejected' ? 'Rifiutato' : 'Pagato'}
-                                  color={claim.status === 'pending' ? 'warning' : 
-                                         claim.status === 'approved' ? 'success' :
-                                         claim.status === 'rejected' ? 'error' : 'info'}
-                                  size="small"
-                                />
-                              </ListItemSecondaryAction>
-                            </ListItem>
-                          ))}
-                        </List>
-                      ) : (
-                        <Typography variant="body2" color="textSecondary">
-                          Nessun sinistro registrato
-                        </Typography>
-                      )}
-                    </CardContent>
-                  </Card>
+                    </Box>
+                    <Box>
+                      <Typography variant="body2" color="textSecondary">Sinistri</Typography>
+                      <Typography variant="body1">
+                        {selectedInsurance.claims} (€{selectedInsurance.totalClaimsAmount.toLocaleString()})
+                      </Typography>
+                    </Box>
+                  </Box>
                 </Grid>
               </Grid>
             )}
           </DialogContent>
           <DialogActions>
-            <Button onClick={() => setInsuranceDetailsDialog(false)}>Chiudi</Button>
-          </DialogActions>
-        </Dialog>
+            <Button onClick={() => setDialogOpen(false)}>Chiudi</Button>
+            <Button variant="contained">Modifica</Button>
+                     </DialogActions>
+         </Dialog>
 
-        {/* Add Insurance Dialog */}
-        <Dialog open={addInsuranceDialog} onClose={() => setAddInsuranceDialog(false)} maxWidth="md" fullWidth>
-          <DialogTitle>Aggiungi Nuova Assicurazione</DialogTitle>
-          <DialogContent>
-            <Grid container spacing={2} sx={{ pt: 1 }}>
-              <Grid item xs={12} md={6}>
-                <FormControl fullWidth>
-                  <InputLabel>Tipo Assicurazione</InputLabel>
-                  <Select
-                    value={newInsurance.type}
-                    onChange={(e) => setNewInsurance(prev => ({ ...prev, type: e.target.value as Insurance['type'] }))}
-                    label="Tipo Assicurazione"
-                  >
-                    <MenuItem value="auto">Auto</MenuItem>
-                    <MenuItem value="home">Casa</MenuItem>
-                    <MenuItem value="pet">Animale Domestico</MenuItem>
-                    <MenuItem value="life">Vita</MenuItem>
-                    <MenuItem value="pension">Pensione</MenuItem>
-                    <MenuItem value="health">Salute</MenuItem>
-                    <MenuItem value="travel">Viaggio</MenuItem>
-                  </Select>
-                </FormControl>
-              </Grid>
-              <Grid item xs={12} md={6}>
-                <TextField
-                  fullWidth
-                  label="Nome Assicurazione"
-                  value={newInsurance.name}
-                  onChange={(e) => setNewInsurance(prev => ({ ...prev, name: e.target.value }))}
-                />
-              </Grid>
-              <Grid item xs={12} md={6}>
-                <TextField
-                  fullWidth
-                  label="Fornitore"
-                  value={newInsurance.provider}
-                  onChange={(e) => setNewInsurance(prev => ({ ...prev, provider: e.target.value }))}
-                />
-              </Grid>
-              <Grid item xs={12} md={6}>
-                <TextField
-                  fullWidth
-                  label="Numero Polizza"
-                  value={newInsurance.policyNumber}
-                  onChange={(e) => setNewInsurance(prev => ({ ...prev, policyNumber: e.target.value }))}
-                />
-              </Grid>
-              <Grid item xs={12} md={6}>
-                <TextField
-                  fullWidth
-                  label="Premio"
-                  type="number"
-                  value={newInsurance.premium}
-                  onChange={(e) => setNewInsurance(prev => ({ ...prev, premium: Number(e.target.value) }))}
-                />
-              </Grid>
-              <Grid item xs={12} md={6}>
-                <FormControl fullWidth>
-                  <InputLabel>Frequenza Premio</InputLabel>
-                  <Select
-                    value={newInsurance.premiumFrequency}
-                    onChange={(e) => setNewInsurance(prev => ({ ...prev, premiumFrequency: e.target.value as Insurance['premiumFrequency'] }))}
-                    label="Frequenza Premio"
-                  >
-                    <MenuItem value="monthly">Mensile</MenuItem>
-                    <MenuItem value="quarterly">Trimestrale</MenuItem>
-                    <MenuItem value="yearly">Annuale</MenuItem>
-                  </Select>
-                </FormControl>
-              </Grid>
-              <Grid item xs={12} md={6}>
-                <TextField
-                  fullWidth
-                  label="Copertura"
-                  type="number"
-                  value={newInsurance.coverage.amount}
-                  onChange={(e) => setNewInsurance(prev => ({ 
-                    ...prev, 
-                    coverage: { ...prev.coverage, amount: Number(e.target.value) }
-                  }))}
-                />
-              </Grid>
-              <Grid item xs={12} md={6}>
-                <FormControl fullWidth>
-                  <InputLabel>Valuta</InputLabel>
-                  <Select
-                    value={newInsurance.coverage.currency}
-                    onChange={(e) => setNewInsurance(prev => ({ 
-                      ...prev, 
-                      coverage: { ...prev.coverage, currency: e.target.value }
-                    }))}
-                    label="Valuta"
-                  >
-                    <MenuItem value="EUR">EUR</MenuItem>
-                    <MenuItem value="USD">USD</MenuItem>
-                    <MenuItem value="GBP">GBP</MenuItem>
-                  </Select>
-                </FormControl>
-              </Grid>
-              <Grid item xs={12}>
-                <TextField
-                  fullWidth
-                  label="Dettagli Copertura"
-                  multiline
-                  rows={3}
-                  value={newInsurance.coverage.details}
-                  onChange={(e) => setNewInsurance(prev => ({ 
-                    ...prev, 
-                    coverage: { ...prev.coverage, details: e.target.value }
-                  }))}
-                />
-              </Grid>
-            </Grid>
-          </DialogContent>
-          <DialogActions>
-            <Button onClick={() => setAddInsuranceDialog(false)}>Annulla</Button>
-            <Button onClick={handleAddInsurance} variant="contained">Aggiungi</Button>
-          </DialogActions>
-        </Dialog>
-      </Box>
-    </Container>
-  );
-};
+         {/* New Policy Dialog */}
+         <Dialog open={newPolicyDialogOpen} onClose={() => setNewPolicyDialogOpen(false)} maxWidth="md" fullWidth>
+           <DialogTitle>
+             Nuova Polizza Assicurativa
+           </DialogTitle>
+           <DialogContent>
+             <Grid container spacing={3} sx={{ mt: 1 }}>
+               <Grid item xs={12} md={6}>
+                 <FormControl fullWidth>
+                   <InputLabel>Tipo Assicurazione</InputLabel>
+                   <Select
+                     value={newPolicy.type}
+                     label="Tipo Assicurazione"
+                     onChange={(e) => setNewPolicy(prev => ({ ...prev, type: e.target.value as Insurance['type'] }))}
+                   >
+                     <MenuItem value="auto">Auto</MenuItem>
+                     <MenuItem value="pension">Pensione</MenuItem>
+                     <MenuItem value="risk">Rischio</MenuItem>
+                     <MenuItem value="life">Vita</MenuItem>
+                   </Select>
+                 </FormControl>
+               </Grid>
+               <Grid item xs={12} md={6}>
+                 <TextField
+                   fullWidth
+                   label="Nome Polizza"
+                   value={newPolicy.name}
+                   onChange={(e) => setNewPolicy(prev => ({ ...prev, name: e.target.value }))}
+                   placeholder="Es. Polizza Auto Completa"
+                 />
+               </Grid>
+               <Grid item xs={12} md={6}>
+                 <TextField
+                   fullWidth
+                   label="Nome Cliente"
+                   value={newPolicy.customerName}
+                   onChange={(e) => setNewPolicy(prev => ({ ...prev, customerName: e.target.value }))}
+                   placeholder="Es. Mario Rossi"
+                 />
+               </Grid>
+               <Grid item xs={12} md={6}>
+                 <FormControl fullWidth>
+                   <InputLabel>Tipo Cliente</InputLabel>
+                   <Select
+                     value={newPolicy.customerType}
+                     label="Tipo Cliente"
+                     onChange={(e) => setNewPolicy(prev => ({ ...prev, customerType: e.target.value as 'individual' | 'business' }))}
+                   >
+                     <MenuItem value="individual">Privato</MenuItem>
+                     <MenuItem value="business">Azienda</MenuItem>
+                   </Select>
+                 </FormControl>
+               </Grid>
+               <Grid item xs={12} md={6}>
+                 <TextField
+                   fullWidth
+                   label="Data Inizio"
+                   type="date"
+                   value={newPolicy.startDate.toISOString().split('T')[0]}
+                   onChange={(e) => setNewPolicy(prev => ({ ...prev, startDate: new Date(e.target.value) }))}
+                   InputLabelProps={{ shrink: true }}
+                 />
+               </Grid>
+               <Grid item xs={12} md={6}>
+                 <TextField
+                   fullWidth
+                   label="Data Fine"
+                   type="date"
+                   value={newPolicy.endDate.toISOString().split('T')[0]}
+                   onChange={(e) => setNewPolicy(prev => ({ ...prev, endDate: new Date(e.target.value) }))}
+                   InputLabelProps={{ shrink: true }}
+                 />
+               </Grid>
+               <Grid item xs={12} md={6}>
+                 <TextField
+                   fullWidth
+                   label="Premio Mensile (€)"
+                   type="number"
+                   value={newPolicy.premium}
+                   onChange={(e) => setNewPolicy(prev => ({ ...prev, premium: Number(e.target.value) }))}
+                   placeholder="0"
+                   InputProps={{
+                     startAdornment: <InputAdornment position="start">€</InputAdornment>,
+                   }}
+                 />
+               </Grid>
+               <Grid item xs={12} md={6}>
+                 <TextField
+                   fullWidth
+                   label="Copertura (€)"
+                   type="number"
+                   value={newPolicy.coverage}
+                   onChange={(e) => setNewPolicy(prev => ({ ...prev, coverage: Number(e.target.value) }))}
+                   placeholder="0"
+                   InputProps={{
+                     startAdornment: <InputAdornment position="start">€</InputAdornment>,
+                   }}
+                 />
+               </Grid>
+               <Grid item xs={12}>
+                 <Box sx={{ p: 2, bgcolor: 'grey.50', borderRadius: 1 }}>
+                   <Typography variant="body2" color="textSecondary" gutterBottom>
+                     Numero Polizza Generato Automaticamente:
+                   </Typography>
+                   <Typography variant="h6" fontFamily="monospace" color="primary.main">
+                     {generatePolicyNumber(newPolicy.type)}
+                   </Typography>
+                 </Box>
+               </Grid>
+             </Grid>
+           </DialogContent>
+           <DialogActions>
+             <Button onClick={() => setNewPolicyDialogOpen(false)}>
+               Annulla
+             </Button>
+             <Button 
+               variant="contained" 
+               onClick={handleSaveNewPolicy}
+               disabled={!newPolicy.name || !newPolicy.customerName || newPolicy.premium <= 0 || newPolicy.coverage <= 0}
+             >
+               Crea Polizza
+             </Button>
+           </DialogActions>
+         </Dialog>
+       </Box>
+     </Container>
+   );
+ };
 
-// Insurance Table Component
-interface InsuranceTableProps {
-  insurances: Insurance[];
-  onView: (insurance: Insurance) => void;
-}
-
-const InsuranceTable: React.FC<InsuranceTableProps> = ({ insurances, onView }) => {
-  const getTypeIcon = (type: Insurance['type']) => {
-    const icons: Record<Insurance['type'], React.ReactNode> = {
-      auto: <CarRental />,
-      home: <Home />,
-      pet: <Pets />,
-      life: <Person />,
-      pension: <AccountBalance />,
-      health: <Person />,
-      travel: <Person />,
-    };
-    return icons[type];
-  };
-
-  const getTypeLabel = (type: Insurance['type']) => {
-    const labels: Record<Insurance['type'], string> = {
-      auto: 'Auto',
-      home: 'Casa',
-      pet: 'Animale',
-      life: 'Vita',
-      pension: 'Pensione',
-      health: 'Salute',
-      travel: 'Viaggio',
-    };
-    return labels[type];
-  };
-
-  const getStatusColor = (status: Insurance['status']) => {
-    const colors: Record<Insurance['status'], 'success' | 'warning' | 'error' | 'default'> = {
-      active: 'success',
-      expired: 'warning',
-      cancelled: 'error',
-      pending: 'default',
-    };
-    return colors[status];
-  };
-
-  const getStatusIcon = (status: Insurance['status']) => {
-    const icons: Record<Insurance['status'], React.ReactNode> = {
-      active: <CheckCircle />,
-      expired: <Warning />,
-      cancelled: <Cancel />,
-      pending: <Warning />,
-    };
-    return icons[status];
-  };
-
-  const formatCurrency = (amount: number, currency: string) => {
-    return new Intl.NumberFormat('it-IT', {
-      style: 'currency',
-      currency: currency,
-    }).format(amount);
-  };
-
-  const formatDate = (date: Date) => {
-    return new Intl.DateTimeFormat('it-IT', {
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric',
-    }).format(date);
-  };
-  return (
-    <TableContainer component={Paper}>
-      <Table>
-        <TableHead>
-          <TableRow>
-            <TableCell>Nome</TableCell>
-            <TableCell>Tipo</TableCell>
-            <TableCell>Fornitore</TableCell>
-            <TableCell>Premio</TableCell>
-            <TableCell>Copertura</TableCell>
-            <TableCell>Scadenza</TableCell>
-            <TableCell>Stato</TableCell>
-            <TableCell>Azioni</TableCell>
-          </TableRow>
-        </TableHead>
-        <TableBody>
-          {insurances.map((insurance) => (
-            <TableRow key={insurance.id} hover>
-              <TableCell>
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                  {getTypeIcon(insurance.type)}
-                  <Box>
-                    <Typography variant="subtitle2" fontWeight="bold">
-                      {insurance.name}
-                    </Typography>
-                    <Typography variant="caption" color="textSecondary">
-                      {insurance.policyNumber}
-                    </Typography>
-                  </Box>
-                </Box>
-              </TableCell>
-              <TableCell>
-                <Chip
-                  label={getTypeLabel(insurance.type)}
-                  size="small"
-                  variant="outlined"
-                />
-              </TableCell>
-              <TableCell>
-                <Typography variant="body2">
-                  {insurance.provider}
-                </Typography>
-              </TableCell>
-              <TableCell>
-                <Typography variant="body2" fontWeight="bold">
-                  {formatCurrency(insurance.premium, insurance.coverage.currency)}
-                </Typography>
-                <Typography variant="caption" color="textSecondary">
-                  {insurance.premiumFrequency === 'monthly' ? 'Mensile' : 
-                   insurance.premiumFrequency === 'quarterly' ? 'Trimestrale' : 'Annuale'}
-                </Typography>
-              </TableCell>
-              <TableCell>
-                <Typography variant="body2">
-                  {formatCurrency(insurance.coverage.amount, insurance.coverage.currency)}
-                </Typography>
-              </TableCell>
-              <TableCell>
-                <Typography variant="body2">
-                  {formatDate(insurance.endDate)}
-                </Typography>
-              </TableCell>
-              <TableCell>
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                  {getStatusIcon(insurance.status)}
-                  <Chip
-                    label={insurance.status === 'active' ? 'Attiva' : 
-                           insurance.status === 'expired' ? 'Scaduta' :
-                           insurance.status === 'cancelled' ? 'Cancellata' : 'In Attesa'}
-                    color={getStatusColor(insurance.status)}
-                    size="small"
-                  />
-                </Box>
-              </TableCell>
-              <TableCell>
-                <Box sx={{ display: 'flex', gap: 1 }}>
-                  <Tooltip title="Visualizza Dettagli">
-                    <IconButton
-                      size="small"
-                      onClick={() => onView(insurance)}
-                    >
-                      <Visibility />
-                    </IconButton>
-                  </Tooltip>
-                  <Tooltip title="Modifica">
-                    <IconButton size="small">
-                      <Edit />
-                    </IconButton>
-                  </Tooltip>
-                  <Tooltip title="Elimina">
-                    <IconButton size="small" color="error">
-                      <Delete />
-                    </IconButton>
-                  </Tooltip>
-                </Box>
-              </TableCell>
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
-    </TableContainer>
-  );
-};
-
-export default InsurancePage;
+export default Insurance;

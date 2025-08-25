@@ -5,105 +5,66 @@ import {
   Typography,
   Container,
   Alert,
+  Button,
+  Paper,
+  Divider,
+  IconButton,
+  Tooltip,
 } from '@mui/material';
 import {
   AccountBalance,
   TrendingUp,
   People,
   AccountBalanceWallet,
+  Refresh,
+  SwapHoriz as TransactionIcon,
+  Assessment as ReportIcon,
+  Business as EnterpriseIcon,
+  Settings as SettingsIcon,
+  SmartToy,
+  Psychology,
+  Security,
+  AutoMode,
+  Assessment,
+  Euro,
+  ShowChart,
+  Logout,
+  ShowChart as EquitiesIcon,
+  AccountBalance as BondsIcon,
 } from '@mui/icons-material';
+import { useNavigate } from 'react-router-dom';
 
-// Charts
-import { LineChart, Line, BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+// Import logo
+import logo from '../../assets/logo.png';
 
 // Services
 import { dashboardService } from '../../services/dashboardService';
 
 // Components
 import StatCard from '../../components/Dashboard/StatCard';
-import ChartCard from '../../components/Dashboard/ChartCard';
+import ChartCard, { ChartType } from '../../components/Dashboard/ChartCard';
 import RecentTransactions from '../../components/Dashboard/RecentTransactions';
 import CryptoPriceWidget from '../../components/Dashboard/CryptoPriceWidget';
 import SystemStatus from '../../components/Dashboard/SystemStatus';
-// Chart components
-interface BalanceData {
-  month: string;
-  balance: number;
-}
+import { AINewsWidget, EnhancedBalanceChart, EnhancedPortfolioChart, EnhancedTransactionChart } from '../../components/Dashboard';
 
-interface TransactionData {
-  type: string;
-  count: number;
-}
-
-interface PortfolioData {
-  currency: string;
-  percentage: number;
-}
-
-const BalanceLineChart = ({ data }: { data: BalanceData[] }) => (
-  <ResponsiveContainer width="100%" height={300}>
-    <LineChart data={data}>
-      <CartesianGrid strokeDasharray="3 3" />
-      <XAxis dataKey="month" />
-      <YAxis />
-      <Tooltip formatter={(value) => [`€${value?.toLocaleString()}`, 'Balance']} />
-      <Legend />
-      <Line 
-        type="monotone" 
-        dataKey="balance" 
-        stroke="#8884d8" 
-        name="Balance"
-        strokeWidth={2}
-        dot={{ fill: '#8884d8', strokeWidth: 2, r: 4 }}
-      />
-    </LineChart>
-  </ResponsiveContainer>
-);
-
-const TransactionBarChart = ({ data }: { data: TransactionData[] }) => (
-  <ResponsiveContainer width="100%" height={300}>
-    <BarChart data={data}>
-      <CartesianGrid strokeDasharray="3 3" />
-      <XAxis dataKey="type" />
-      <YAxis />
-      <Tooltip />
-      <Legend />
-      <Bar dataKey="count" fill="#82ca9d" name="Transactions" />
-    </BarChart>
-  </ResponsiveContainer>
-);
-
-const PortfolioPieChart = ({ data }: { data: PortfolioData[] }) => (
-  <ResponsiveContainer width="100%" height={300}>
-    <PieChart>
-      <Pie
-        data={data}
-        cx="50%"
-        cy="50%"
-        labelLine={false}
-        label={({ currency, percentage }) => `${currency} ${percentage}%`}
-        outerRadius={80}
-        fill="#8884d8"
-        dataKey="percentage"
-      >
-        {data.map((entry, index) => (
-          <Cell key={`cell-${index}`} fill={['#8884d8', '#82ca9d', '#ffc658', '#ff7300'][index % 4]} />
-        ))}
-      </Pie>
-      <Tooltip formatter={(value) => [`${value}%`, 'Percentage']} />
-      <Legend />
-    </PieChart>
-  </ResponsiveContainer>
-);
-// Mock data - replace with actual API calls
-
-// Chart.js registration placeholder
+// Enhanced Chart components
+import {
+  BalanceData,
+  TransactionData,
+  PortfolioData
+} from '../../components/Dashboard/EnhancedCharts';
 
 const Dashboard: React.FC = () => {
+  const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [dashboardData, setDashboardData] = useState<any>(null);
+  
+  // Chart type states
+  const [balanceChartType, setBalanceChartType] = useState<ChartType>('line');
+  const [transactionChartType, setTransactionChartType] = useState<ChartType>('bar');
+  const [portfolioChartType, setPortfolioChartType] = useState<ChartType>('pie');
 
   // Load dashboard data
   useEffect(() => {
@@ -124,6 +85,17 @@ const Dashboard: React.FC = () => {
     loadDashboardData();
   }, []);
 
+  const handleNavigation = (path: string) => {
+    if (path === '/login') {
+      // Logout: pulisci i dati di autenticazione
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
+      navigate('/login');
+    } else {
+      navigate(path);
+    }
+  };
+
   if (error) {
     return (
       <Container maxWidth="xl">
@@ -133,8 +105,6 @@ const Dashboard: React.FC = () => {
       </Container>
     );
   }
-
-
 
   // Chart data in Recharts format
   const balanceData: BalanceData[] = [
@@ -162,92 +132,420 @@ const Dashboard: React.FC = () => {
 
   return (
     <Container maxWidth="xl">
-      <Box sx={{ py: 3 }}>
-        <Typography variant="h4" gutterBottom fontWeight="bold">
-          Dashboard
-        </Typography>
-        
-        {/* Stats Cards */}
+      <Box sx={{ py: 4 }}>
+        {/* Header principale con logo e titolo */}
+        <Paper
+          elevation={3}
+          sx={{
+            background: 'linear-gradient(135deg, #1976d2 0%, #42a5f5 100%)',
+            color: 'white',
+            p: 3,
+            mb: 3,
+            borderRadius: 2,
+          }}
+        >
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+              <Box
+                component="img"
+                src={logo}
+                alt="Logo Gestionale Finanziario"
+                sx={{
+                  width: 50,
+                  height: 50,
+                  borderRadius: 1,
+                  boxShadow: '0 2px 10px rgba(0,0,0,0.2)',
+                  border: '2px solid rgba(255,255,255,0.3)',
+                }}
+              />
+              <Box>
+                <Typography variant="h4" fontWeight="bold" gutterBottom>
+                  Dashboard Gestionale Finanziario
+                </Typography>
+                <Typography variant="body1" sx={{ opacity: 0.9 }}>
+                  Sistema AI Avanzato - Controllo Completo delle Operazioni
+                </Typography>
+              </Box>
+            </Box>
+            <Box>
+              <Tooltip title="Logout">
+                <IconButton onClick={() => handleNavigation('/login')} sx={{ color: 'white', mr: 2 }}>
+                  <Logout />
+                </IconButton>
+              </Tooltip>
+              <Button
+                variant="contained"
+                startIcon={<Refresh />}
+                onClick={() => window.location.reload()}
+                sx={{ 
+                  bgcolor: 'rgba(255,255,255,0.2)', 
+                  color: 'white',
+                  '&:hover': { bgcolor: 'rgba(255,255,255,0.3)' }
+                }}
+              >
+                Aggiorna
+              </Button>
+            </Box>
+          </Box>
+        </Paper>
+
+        {/* Statistiche principali */}
         <Grid container spacing={3} sx={{ mb: 4 }}>
-          <Grid item xs={12} sm={6} md={3}>
+          <Grid item xs={12} sm={6} md={3} xl={2.4}>
             <StatCard
-              title="Total Balance"
-              value={`€${dashboardData?.stats?.totalBalance?.toLocaleString() || '0'}`}
+              title="Saldo Totale"
+              value="€ 125.430,50"
               icon={<AccountBalance />}
               color="primary.main"
-              trend={{ value: dashboardData?.stats?.monthlyGrowth || 0, isPositive: true }}
-              loading={isLoading}
+              trend="+2.5%"
+              trendDirection="up"
             />
           </Grid>
-          <Grid item xs={12} sm={6} md={3}>
+          <Grid item xs={12} sm={6} md={3} xl={2.4}>
             <StatCard
-              title="Monthly Growth"
-              value={`${dashboardData?.stats?.monthlyGrowth || 0}%`}
-              icon={<TrendingUp />}
+              title="Transazioni Oggi"
+              value="47"
+              icon={<TransactionIcon />}
               color="success.main"
-              trend={{ value: 2.1, isPositive: true }}
-              loading={isLoading}
+              trend="+12%"
+              trendDirection="up"
             />
           </Grid>
-          <Grid item xs={12} sm={6} md={3}>
+          <Grid item xs={12} sm={6} md={3} xl={2.4}>
             <StatCard
-              title="Active Accounts"
-              value={dashboardData?.stats?.activeAccounts || 0}
+              title="Clienti Attivi"
+              value="1.247"
               icon={<People />}
               color="info.main"
-              loading={isLoading}
+              trend="+5.2%"
+              trendDirection="up"
             />
           </Grid>
-          <Grid item xs={12} sm={6} md={3}>
+          <Grid item xs={12} sm={6} md={3} xl={2.4}>
             <StatCard
-              title="Total Transactions"
-              value={dashboardData?.stats?.totalTransactions || 0}
+              title="Crypto Assets"
+              value="€ 23.450,00"
               icon={<AccountBalanceWallet />}
               color="warning.main"
-              loading={isLoading}
+              trend="-1.8%"
+              trendDirection="down"
+            />
+          </Grid>
+          <Grid item xs={12} sm={6} md={3} xl={2.4}>
+            <StatCard
+              title="Fondi Gestiti"
+              value="€ 2.1M"
+              icon={<Euro />}
+              color="secondary.main"
+              trend="+8.3%"
+              trendDirection="up"
             />
           </Grid>
         </Grid>
 
-        {/* Charts and Widgets */}
+        {/* Navigazione rapida organizzata per categorie */}
+        <Paper elevation={1} sx={{ p: 3, mb: 4 }}>
+          <Typography variant="h5" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 3 }}>
+            🧭 Navigazione Rapida
+          </Typography>
+          
+          {/* Categoria: Operazioni Bancarie */}
+          <Box sx={{ mb: 3 }}>
+            <Typography variant="h6" color="primary" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <AccountBalance /> Operazioni Bancarie
+            </Typography>
+            <Grid container spacing={2}>
+              <Grid item xs={12} sm={6} md={3} xl={2.4}>
+                <Button
+                  fullWidth
+                  variant="outlined"
+                  startIcon={<AccountBalance />}
+                  onClick={() => handleNavigation('/accounts')}
+                  sx={{ 
+                    justifyContent: 'flex-start', 
+                    p: { xs: 3, md: 2 }, 
+                    height: { xs: 80, md: 60 },
+                    fontSize: { xs: '1rem', md: '0.875rem' }
+                  }}
+                >
+                  Conti Bancari
+                </Button>
+              </Grid>
+              <Grid item xs={12} sm={6} md={3} xl={2.4}>
+                <Button
+                  fullWidth
+                  variant="outlined"
+                  startIcon={<TransactionIcon />}
+                  onClick={() => handleNavigation('/transactions')}
+                  sx={{ 
+                    justifyContent: 'flex-start', 
+                    p: { xs: 3, md: 2 }, 
+                    height: { xs: 80, md: 60 },
+                    fontSize: { xs: '1rem', md: '0.875rem' }
+                  }}
+                >
+                  Transazioni
+                </Button>
+              </Grid>
+              <Grid item xs={12} sm={6} md={3} xl={2.4}>
+                <Button
+                  fullWidth
+                  variant="outlined"
+                  startIcon={<People />}
+                  onClick={() => handleNavigation('/customers')}
+                  sx={{ 
+                    justifyContent: 'flex-start', 
+                    p: { xs: 3, md: 2 }, 
+                    height: { xs: 80, md: 60 },
+                    fontSize: { xs: '1rem', md: '0.875rem' }
+                  }}
+                >
+                  Clienti
+                </Button>
+              </Grid>
+              <Grid item xs={12} sm={6} md={3} xl={2.4}>
+                <Button
+                  fullWidth
+                  variant="outlined"
+                  startIcon={<ReportIcon />}
+                  onClick={() => handleNavigation('/reports')}
+                  sx={{ 
+                    justifyContent: 'flex-start', 
+                    p: { xs: 3, md: 2 }, 
+                    height: { xs: 80, md: 60 },
+                    fontSize: { xs: '1rem', md: '0.875rem' }
+                  }}
+                >
+                  Report
+                </Button>
+              </Grid>
+              <Grid item xs={12} sm={6} md={3} xl={2.4}>
+                <Button
+                  fullWidth
+                  variant="outlined"
+                  startIcon={<Assessment />}
+                  onClick={() => handleNavigation('/rss')}
+                  sx={{ 
+                    justifyContent: 'flex-start', 
+                    p: { xs: 3, md: 2 }, 
+                    height: { xs: 80, md: 60 },
+                    fontSize: { xs: '1rem', md: '0.875rem' }
+                  }}
+                >
+                  RSS Feed
+                </Button>
+              </Grid>
+            </Grid>
+          </Box>
+
+          <Divider sx={{ my: 3 }} />
+
+          {/* Categoria: Investimenti e Crypto */}
+          <Box sx={{ mb: 3 }}>
+            <Typography variant="h6" color="secondary" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <ShowChart /> Investimenti e Crypto
+            </Typography>
+            <Grid container spacing={2}>
+              <Grid item xs={12} sm={6} md={3}>
+                <Button
+                  fullWidth
+                  variant="outlined"
+                  startIcon={<AccountBalanceWallet />}
+                  onClick={() => handleNavigation('/crypto')}
+                  sx={{ justifyContent: 'flex-start', p: 2, height: 60 }}
+                >
+                  Crypto Wallets
+                </Button>
+              </Grid>
+              <Grid item xs={12} sm={6} md={3}>
+                <Button
+                  fullWidth
+                  variant="outlined"
+                  startIcon={<Euro />}
+                  onClick={() => handleNavigation('/funds')}
+                  sx={{ justifyContent: 'flex-start', p: 2, height: 60 }}
+                >
+                  Fondi
+                </Button>
+              </Grid>
+              <Grid item xs={12} sm={6} md={3}>
+                <Button
+                  fullWidth
+                  variant="outlined"
+                  startIcon={<EquitiesIcon />}
+                  onClick={() => handleNavigation('/equities')}
+                  sx={{ justifyContent: 'flex-start', p: 2, height: 60 }}
+                >
+                  Azioni
+                </Button>
+              </Grid>
+              <Grid item xs={12} sm={6} md={3}>
+                <Button
+                  fullWidth
+                  variant="outlined"
+                  startIcon={<BondsIcon />}
+                  onClick={() => handleNavigation('/bonds')}
+                  sx={{ justifyContent: 'flex-start', p: 2, height: 60 }}
+                >
+                  Obbligazioni
+                </Button>
+              </Grid>
+              <Grid item xs={12} sm={6} md={3}>
+                <Button
+                  fullWidth
+                  variant="outlined"
+                  startIcon={<Security />}
+                  onClick={() => handleNavigation('/insurance')}
+                  sx={{ justifyContent: 'flex-start', p: 2, height: 60 }}
+                >
+                  Assicurazioni
+                </Button>
+              </Grid>
+            </Grid>
+          </Box>
+
+          <Divider sx={{ my: 3 }} />
+
+          {/* Categoria: AI e Impostazioni */}
+          <Box>
+            <Typography variant="h6" color="success.main" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <Psychology /> Intelligenza Artificiale
+            </Typography>
+            <Grid container spacing={2}>
+              <Grid item xs={12} sm={6} md={3}>
+                <Button
+                  fullWidth
+                  variant="outlined"
+                  startIcon={<EnterpriseIcon />}
+                  onClick={() => handleNavigation('/ai-enterprise')}
+                  sx={{ justifyContent: 'flex-start', p: 2, height: 60 }}
+                >
+                  AI Enterprise
+                </Button>
+              </Grid>
+              <Grid item xs={12} sm={6} md={3}>
+                <Button
+                  fullWidth
+                  variant="outlined"
+                  startIcon={<AutoMode />}
+                  onClick={() => handleNavigation('/ai-agent')}
+                  sx={{ justifyContent: 'flex-start', p: 2, height: 60 }}
+                >
+                  AI Agent
+                </Button>
+              </Grid>
+              <Grid item xs={12} sm={6} md={3}>
+                <Button
+                  fullWidth
+                  variant="outlined"
+                  startIcon={<SmartToy />}
+                  onClick={() => handleNavigation('/ai-advanced')}
+                  sx={{ justifyContent: 'flex-start', p: 2, height: 60 }}
+                >
+                  AI Avanzato
+                </Button>
+              </Grid>
+              <Grid item xs={12} sm={6} md={3}>
+                <Button
+                  fullWidth
+                  variant="outlined"
+                  startIcon={<SettingsIcon />}
+                  onClick={() => handleNavigation('/settings')}
+                  sx={{ justifyContent: 'flex-start', p: 2, height: 60 }}
+                >
+                  Impostazioni
+                </Button>
+              </Grid>
+            </Grid>
+          </Box>
+        </Paper>
+
+        {/* Grafici e Widget organizzati in griglia */}
         <Grid container spacing={3}>
-          <Grid item xs={12} lg={8}>
-            <ChartCard title="Balance Trend" loading={isLoading}>
-              <BalanceLineChart data={balanceData} />
+          {/* Grafico principale - Trend Saldo */}
+          <Grid item xs={12} lg={8} xl={9}>
+            <ChartCard 
+              title="📈 Trend Saldo - Analisi Evoluzione Patrimoniale" 
+              loading={isLoading}
+              chartTypes={['line', 'area', 'bar', 'scatter', 'ecg']}
+              onChartTypeChange={setBalanceChartType}
+              currentChartType={balanceChartType}
+            >
+              <EnhancedBalanceChart data={balanceData} chartType={balanceChartType} />
             </ChartCard>
           </Grid>
           
-          <Grid item xs={12} lg={4}>
-            <CryptoPriceWidget
-              prices={dashboardData?.cryptoPrices || []}
-              loading={isLoading}
-            />
+          {/* Widget Crypto in evidenza */}
+          <Grid item xs={12} lg={4} xl={3}>
+            <Paper elevation={2} sx={{ p: 2, height: '100%' }}>
+              <Typography variant="h6" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                🪙 Prezzi Crypto
+              </Typography>
+              <CryptoPriceWidget
+                prices={dashboardData?.cryptoPrices || []}
+                loading={isLoading}
+              />
+            </Paper>
           </Grid>
           
-          <Grid item xs={12} lg={6}>
-            <ChartCard title="Transaction Types" loading={isLoading}>
-              <TransactionBarChart data={transactionData} />
+          {/* Grafici secondari in riga */}
+          <Grid item xs={12} lg={6} xl={4}>
+            <ChartCard 
+              title="💳 Tipi di Transazione - Distribuzione Operazioni" 
+              loading={isLoading}
+              chartTypes={['bar', 'line', 'area', 'pie', 'ecg']}
+              onChartTypeChange={setTransactionChartType}
+              currentChartType={transactionChartType}
+            >
+              <EnhancedTransactionChart data={transactionData} chartType={transactionChartType} />
             </ChartCard>
           </Grid>
           
-          <Grid item xs={12} lg={6}>
-            <ChartCard title="Portfolio Distribution" loading={isLoading}>
-              <PortfolioPieChart data={portfolioData} />
+          <Grid item xs={12} lg={6} xl={4}>
+            <ChartCard 
+              title="🎯 Distribuzione Portfolio - Asset Allocation" 
+              loading={isLoading}
+              chartTypes={['pie', 'bar', 'line', 'area', 'ecg']}
+              onChartTypeChange={setPortfolioChartType}
+              currentChartType={portfolioChartType}
+            >
+              <EnhancedPortfolioChart data={portfolioData} chartType={portfolioChartType} />
             </ChartCard>
           </Grid>
           
-          <Grid item xs={12} lg={8}>
-            <RecentTransactions
-              transactions={dashboardData?.transactions || []}
-              loading={isLoading}
-            />
+          {/* Widget News AI e Transazioni Recenti */}
+          <Grid item xs={12} lg={4} xl={4}>
+            <Paper elevation={2} sx={{ p: 2, height: '100%' }}>
+              <Typography variant="h6" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                📰 News AI
+              </Typography>
+              <AINewsWidget maxNews={3} showAlerts={true} />
+            </Paper>
           </Grid>
           
-          <Grid item xs={12} lg={4}>
-            <SystemStatus
-              alerts={dashboardData?.systemAlerts || []}
-              loading={isLoading}
-            />
+          <Grid item xs={12} lg={8} xl={8}>
+            <Paper elevation={2} sx={{ p: 2, height: '100%' }}>
+              <Typography variant="h6" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                💸 Transazioni Recenti
+              </Typography>
+              <RecentTransactions
+                transactions={dashboardData?.transactions || []}
+                loading={isLoading}
+              />
+            </Paper>
+          </Grid>
+          
+          {/* Status Sistema */}
+          <Grid item xs={12}>
+            <Paper elevation={2} sx={{ p: 2 }}>
+              <Typography variant="h6" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                🔍 Status Sistema
+              </Typography>
+              <SystemStatus
+                alerts={dashboardData?.systemAlerts || []}
+                loading={isLoading}
+              />
+            </Paper>
           </Grid>
         </Grid>
       </Box>

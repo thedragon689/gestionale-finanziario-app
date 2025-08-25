@@ -1,7 +1,7 @@
 {
   "name": "core-banking",
   "version": "1.0.0",
-  "description": "Modulo Core Banking - Gestione contabilità, bilanci e movimenti bancari",
+  "description": "Modulo Core Banking - Gestione contabilità, bilanci, movimenti bancari e AI Chatbot per assistenza clienti",
   "main": "src/server.js",
   "scripts": {
     "start": "node src/server.js",
@@ -9,7 +9,7 @@
     "build": "npm run build:clean && npm run build:compile",
     "build:clean": "rm -rf dist",
     "build:compile": "babel src -d dist",
-    "test": "jest --coverage",
+    "test": "echo \"Error: no test specified\" && exit 1",
     "test:watch": "jest --watch",
     "test:e2e": "jest --config jest.e2e.config.js",
     "lint": "eslint src/**/*.js",
@@ -74,6 +74,11 @@
     "core",
     "accounting",
     "transactions",
-    "balance"
+    "balance",
+    "ai",
+    "chatbot",
+    "artificial-intelligence",
+    "customer-service",
+    "fintech"
   ]
 }

@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import SystemDebug from '../../components/Debug/SystemDebug';
 import {
   Box,
   Container,
@@ -11,7 +12,6 @@ import {
   FormControlLabel,
   TextField,
   Button,
-  Divider,
   List,
   ListItem,
   ListItemText,
@@ -21,126 +21,95 @@ import {
   MenuItem,
   FormControl,
   InputLabel,
-  Alert,
   Chip,
-  Avatar,
-  IconButton,
+  Alert,
+  Tabs,
+  Tab,
 } from '@mui/material';
 import {
-  Settings as SettingsIcon,
-  Person,
-  Security,
   Notifications,
-  Language,
+  Security,
   Palette,
+  AccountCircle,
+  VpnKey,
   Storage,
   Backup,
-  Email,
-  Phone,
-  LocationOn,
-  Edit,
+  Update,
   Save,
-  Cancel,
-  Visibility,
-  VisibilityOff,
-  Lock,
-  NotificationsActive,
-  NotificationsOff,
-  DarkMode,
-  LightMode,
+  Refresh,
+  BugReport,
 } from '@mui/icons-material';
 
-interface UserSettings {
-  firstName: string;
-  lastName: string;
-  email: string;
-  phone: string;
-  language: string;
-  timezone: string;
-  currency: string;
+interface TabPanelProps {
+  children?: React.ReactNode;
+  index: number;
+  value: number;
 }
 
-interface SecuritySettings {
-  twoFactorAuth: boolean;
-  sessionTimeout: number;
-  passwordExpiry: number;
-  loginNotifications: boolean;
-}
+function TabPanel(props: TabPanelProps) {
+  const { children, value, index, ...other } = props;
 
-interface NotificationSettings {
-  emailNotifications: boolean;
-  smsNotifications: boolean;
-  pushNotifications: boolean;
-  transactionAlerts: boolean;
-  securityAlerts: boolean;
-  marketingEmails: boolean;
-}
-
-interface SystemSettings {
-  darkMode: boolean;
-  autoLogout: boolean;
-  dataRetention: number;
-  backupFrequency: string;
+  return (
+    <div
+      role="tabpanel"
+      hidden={value !== index}
+      id={`settings-tabpanel-${index}`}
+      aria-labelledby={`settings-tab-${index}`}
+      {...other}
+    >
+      {value === index && (
+        <Box sx={{ p: 3 }}>
+          {children}
+        </Box>
+      )}
+    </div>
+  );
 }
 
 const Settings: React.FC = () => {
-  const [activeTab, setActiveTab] = useState(0);
-  const [isEditing, setIsEditing] = useState(false);
-  const [showPassword, setShowPassword] = useState(false);
-  const [saveSuccess, setSaveSuccess] = useState(false);
-
-  // Mock user data
-  const [userSettings, setUserSettings] = useState<UserSettings>({
-    firstName: 'Mario',
-    lastName: 'Rossi',
-    email: 'mario.rossi@email.com',
-    phone: '+39 333 1234567',
-    language: 'it',
-    timezone: 'Europe/Rome',
-    currency: 'EUR',
+  const [tabValue, setTabValue] = useState(0);
+  const [notifications, setNotifications] = useState({
+    email: true,
+    sms: false,
+    push: true,
+    transactions: true,
+    security: true,
+    marketing: false,
   });
+  const [theme, setTheme] = useState('light');
+  const [language, setLanguage] = useState('it');
+  const [currency, setCurrency] = useState('EUR');
+  const [timezone, setTimezone] = useState('Europe/Rome');
+  const [saved, setSaved] = useState(false);
 
-  const [securitySettings, setSecuritySettings] = useState<SecuritySettings>({
-    twoFactorAuth: true,
-    sessionTimeout: 30,
-    passwordExpiry: 90,
-    loginNotifications: true,
-  });
-
-  const [notificationSettings, setNotificationSettings] = useState<NotificationSettings>({
-    emailNotifications: true,
-    smsNotifications: false,
-    pushNotifications: true,
-    transactionAlerts: true,
-    securityAlerts: true,
-    marketingEmails: false,
-  });
-
-  const [systemSettings, setSystemSettings] = useState<SystemSettings>({
-    darkMode: false,
-    autoLogout: true,
-    dataRetention: 365,
-    backupFrequency: 'daily',
-  });
+  const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
+    setTabValue(newValue);
+  };
 
   const handleSave = () => {
-    // Mock save operation
-    setIsEditing(false);
-    setSaveSuccess(true);
-    setTimeout(() => setSaveSuccess(false), 3000);
+    setSaved(true);
+    setTimeout(() => setSaved(false), 3000);
   };
 
-  const handleCancel = () => {
-    setIsEditing(false);
-    // Reset to original values
+  const mockUserProfile = {
+    name: 'Mario Rossi',
+    email: 'mario.rossi@email.com',
+    phone: '+39 333 1234567',
+    address: 'Via Roma 123, Milano, Italia',
+    role: 'Amministratore',
+    lastLogin: '2024-01-15 14:30',
+    twoFactorEnabled: true,
+    sessionTimeout: 30,
   };
 
-  const tabs = [
-    { label: 'Profilo', icon: <Person /> },
-    { label: 'Sicurezza', icon: <Security /> },
-    { label: 'Notifiche', icon: <Notifications /> },
-    { label: 'Sistema', icon: <SettingsIcon /> },
-  ];
+  const mockSystemInfo = {
+    version: '2.1.0',
+    lastUpdate: '2024-01-10',
+    databaseSize: '2.4 GB',
+    uptime: '99.9%',
+    activeUsers: 1247,
+    totalTransactions: 45678,
+  };
 
   return (
     <Container maxWidth="xl">
@@ -149,442 +118,440 @@ const Settings: React.FC = () => {
           Impostazioni
         </Typography>
 
-        {saveSuccess && (
+        {saved && (
           <Alert severity="success" sx={{ mb: 3 }}>
             Impostazioni salvate con successo!
           </Alert>
         )}
 
-        <Grid container spacing={3}>
-          {/* Sidebar */}
-          <Grid item xs={12} md={3}>
-            <Paper sx={{ p: 2 }}>
-              <List>
-                {tabs.map((tab, index) => (
-                  <ListItem
-                    key={index}
-                    button
-                    selected={activeTab === index}
-                    onClick={() => setActiveTab(index)}
-                    sx={{
-                      borderRadius: 1,
-                      mb: 1,
-                      '&.Mui-selected': {
-                        backgroundColor: 'primary.main',
-                        color: 'white',
-                        '&:hover': {
-                          backgroundColor: 'primary.dark',
-                        },
-                      },
-                    }}
-                  >
-                    <ListItemIcon sx={{ color: 'inherit' }}>
-                      {tab.icon}
+        <Paper sx={{ width: '100%' }}>
+          <Tabs
+            value={tabValue}
+            onChange={handleTabChange}
+            aria-label="settings tabs"
+            sx={{ borderBottom: 1, borderColor: 'divider' }}
+          >
+            <Tab label="Profilo" icon={<AccountCircle />} />
+            <Tab label="Notifiche" icon={<Notifications />} />
+            <Tab label="Sicurezza" icon={<Security />} />
+            <Tab label="Aspetto" icon={<Palette />} />
+            <Tab label="Sistema" icon={<Storage />} />
+            <Tab label="Debug" icon={<BugReport />} />
+          </Tabs>
+
+          {/* Profile Tab */}
+          <TabPanel value={tabValue} index={0}>
+            <Grid container spacing={3}>
+              <Grid item xs={12} md={6}>
+                <Typography variant="h6" gutterBottom>
+                  Informazioni Personali
+                </Typography>
+                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                  <TextField
+                    fullWidth
+                    label="Nome Completo"
+                    value={mockUserProfile.name}
+                    variant="outlined"
+                  />
+                  <TextField
+                    fullWidth
+                    label="Email"
+                    value={mockUserProfile.email}
+                    variant="outlined"
+                    type="email"
+                  />
+                  <TextField
+                    fullWidth
+                    label="Telefono"
+                    value={mockUserProfile.phone}
+                    variant="outlined"
+                  />
+                  <TextField
+                    fullWidth
+                    label="Indirizzo"
+                    value={mockUserProfile.address}
+                    variant="outlined"
+                    multiline
+                    rows={2}
+                  />
+                </Box>
+              </Grid>
+              <Grid item xs={12} md={6}>
+                <Typography variant="h6" gutterBottom>
+                  Informazioni Account
+                </Typography>
+                <List>
+                  <ListItem>
+                    <ListItemIcon>
+                      <AccountCircle />
                     </ListItemIcon>
-                    <ListItemText primary={tab.label} />
+                    <ListItemText
+                      primary="Ruolo"
+                      secondary={mockUserProfile.role}
+                    />
                   </ListItem>
-                ))}
-              </List>
-            </Paper>
-          </Grid>
+                  <ListItem>
+                    <ListItemIcon>
+                      <Update />
+                    </ListItemIcon>
+                    <ListItemText
+                      primary="Ultimo Accesso"
+                      secondary={mockUserProfile.lastLogin}
+                    />
+                  </ListItem>
+                  <ListItem>
+                    <ListItemIcon>
+                      <VpnKey />
+                    </ListItemIcon>
+                    <ListItemText
+                      primary="Autenticazione a Due Fattori"
+                      secondary={mockUserProfile.twoFactorEnabled ? 'Abilitata' : 'Disabilitata'}
+                    />
+                    <ListItemSecondaryAction>
+                      <Chip
+                        label={mockUserProfile.twoFactorEnabled ? 'Attiva' : 'Inattiva'}
+                        color={mockUserProfile.twoFactorEnabled ? 'success' : 'default'}
+                        size="small"
+                      />
+                    </ListItemSecondaryAction>
+                  </ListItem>
+                </List>
+              </Grid>
+            </Grid>
+          </TabPanel>
 
-          {/* Main Content */}
-          <Grid item xs={12} md={9}>
-            <Paper sx={{ p: 3 }}>
-              {/* Profile Settings */}
-              {activeTab === 0 && (
-                <Box>
-                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-                    <Typography variant="h5" fontWeight="bold">
-                      Profilo Utente
+          {/* Notifications Tab */}
+          <TabPanel value={tabValue} index={1}>
+            <Grid container spacing={3}>
+              <Grid item xs={12} md={6}>
+                <Typography variant="h6" gutterBottom>
+                  Canali di Notifica
+                </Typography>
+                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                  <FormControlLabel
+                    control={
+                      <Switch
+                        checked={notifications.email}
+                        onChange={(e) => setNotifications({ ...notifications, email: e.target.checked })}
+                      />
+                    }
+                    label="Notifiche Email"
+                  />
+                  <FormControlLabel
+                    control={
+                      <Switch
+                        checked={notifications.sms}
+                        onChange={(e) => setNotifications({ ...notifications, sms: e.target.checked })}
+                      />
+                    }
+                    label="Notifiche SMS"
+                  />
+                  <FormControlLabel
+                    control={
+                      <Switch
+                        checked={notifications.push}
+                        onChange={(e) => setNotifications({ ...notifications, push: e.target.checked })}
+                      />
+                    }
+                    label="Notifiche Push"
+                  />
+                </Box>
+              </Grid>
+              <Grid item xs={12} md={6}>
+                <Typography variant="h6" gutterBottom>
+                  Tipi di Notifica
+                </Typography>
+                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                  <FormControlLabel
+                    control={
+                      <Switch
+                        checked={notifications.transactions}
+                        onChange={(e) => setNotifications({ ...notifications, transactions: e.target.checked })}
+                      />
+                    }
+                    label="Transazioni"
+                  />
+                  <FormControlLabel
+                    control={
+                      <Switch
+                        checked={notifications.security}
+                        onChange={(e) => setNotifications({ ...notifications, security: e.target.checked })}
+                      />
+                    }
+                    label="Sicurezza"
+                  />
+                  <FormControlLabel
+                    control={
+                      <Switch
+                        checked={notifications.marketing}
+                        onChange={(e) => setNotifications({ ...notifications, marketing: e.target.checked })}
+                      />
+                    }
+                    label="Marketing"
+                  />
+                </Box>
+              </Grid>
+            </Grid>
+          </TabPanel>
+
+          {/* Security Tab */}
+          <TabPanel value={tabValue} index={2}>
+            <Grid container spacing={3}>
+              <Grid item xs={12} md={6}>
+                <Typography variant="h6" gutterBottom>
+                  Impostazioni Sicurezza
+                </Typography>
+                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                  <FormControlLabel
+                    control={<Switch defaultChecked />}
+                    label="Richiedi Password per Operazioni Critiche"
+                  />
+                  <FormControlLabel
+                    control={<Switch defaultChecked />}
+                    label="Blocca Account dopo 3 Tentativi Falliti"
+                  />
+                  <FormControlLabel
+                    control={<Switch />}
+                    label="Richiedi Verifica per Cambi IP"
+                  />
+                  <FormControlLabel
+                    control={<Switch defaultChecked />}
+                    label="Log di Sicurezza"
+                  />
+                </Box>
+                <Box sx={{ mt: 3 }}>
+                  <Typography variant="body2" color="textSecondary" gutterBottom>
+                    Timeout Sessione (minuti)
+                  </Typography>
+                  <TextField
+                    type="number"
+                    value={mockUserProfile.sessionTimeout}
+                    variant="outlined"
+                    size="small"
+                    sx={{ width: 120 }}
+                  />
+                </Box>
+              </Grid>
+              <Grid item xs={12} md={6}>
+                <Typography variant="h6" gutterBottom>
+                  Attività Recenti
+                </Typography>
+                <List>
+                  <ListItem>
+                    <ListItemIcon>
+                      <Security color="success" />
+                    </ListItemIcon>
+                    <ListItemText
+                      primary="Accesso riuscito"
+                      secondary="2024-01-15 14:30 - IP: 192.168.1.100"
+                    />
+                  </ListItem>
+                  <ListItem>
+                    <ListItemIcon>
+                      <Security color="warning" />
+                    </ListItemIcon>
+                    <ListItemText
+                      primary="Cambio password"
+                      secondary="2024-01-14 09:15 - IP: 192.168.1.100"
+                    />
+                  </ListItem>
+                  <ListItem>
+                    <ListItemIcon>
+                      <Security color="info" />
+                    </ListItemIcon>
+                    <ListItemText
+                      primary="Abilitazione 2FA"
+                      secondary="2024-01-10 16:45 - IP: 192.168.1.100"
+                    />
+                  </ListItem>
+                </List>
+              </Grid>
+            </Grid>
+          </TabPanel>
+
+          {/* Appearance Tab */}
+          <TabPanel value={tabValue} index={3}>
+            <Grid container spacing={3}>
+              <Grid item xs={12} md={6}>
+                <Typography variant="h6" gutterBottom>
+                  Tema e Colori
+                </Typography>
+                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                  <FormControl fullWidth>
+                    <InputLabel>Tema</InputLabel>
+                    <Select
+                      value={theme}
+                      label="Tema"
+                      onChange={(e) => setTheme(e.target.value)}
+                    >
+                      <MenuItem value="light">Chiaro</MenuItem>
+                      <MenuItem value="dark">Scuro</MenuItem>
+                      <MenuItem value="auto">Automatico</MenuItem>
+                    </Select>
+                  </FormControl>
+                  <FormControl fullWidth>
+                    <InputLabel>Lingua</InputLabel>
+                    <Select
+                      value={language}
+                      label="Lingua"
+                      onChange={(e) => setLanguage(e.target.value)}
+                    >
+                      <MenuItem value="it">Italiano</MenuItem>
+                      <MenuItem value="en">English</MenuItem>
+                      <MenuItem value="de">Deutsch</MenuItem>
+                      <MenuItem value="fr">Français</MenuItem>
+                    </Select>
+                  </FormControl>
+                  <FormControl fullWidth>
+                    <InputLabel>Valuta</InputLabel>
+                    <Select
+                      value={currency}
+                      label="Valuta"
+                      onChange={(e) => setCurrency(e.target.value)}
+                    >
+                      <MenuItem value="EUR">Euro (€)</MenuItem>
+                      <MenuItem value="USD">Dollaro ($)</MenuItem>
+                      <MenuItem value="GBP">Sterlina (£)</MenuItem>
+                      <MenuItem value="CHF">Franco Svizzero (CHF)</MenuItem>
+                    </Select>
+                  </FormControl>
+                  <FormControl fullWidth>
+                    <InputLabel>Fuso Orario</InputLabel>
+                    <Select
+                      value={timezone}
+                      label="Fuso Orario"
+                      onChange={(e) => setTimezone(e.target.value)}
+                    >
+                      <MenuItem value="Europe/Rome">Roma (UTC+1)</MenuItem>
+                      <MenuItem value="Europe/London">Londra (UTC+0)</MenuItem>
+                      <MenuItem value="America/New_York">New York (UTC-5)</MenuItem>
+                      <MenuItem value="Asia/Tokyo">Tokyo (UTC+9)</MenuItem>
+                    </Select>
+                  </FormControl>
+                </Box>
+              </Grid>
+              <Grid item xs={12} md={6}>
+                <Typography variant="h6" gutterBottom>
+                  Anteprima
+                </Typography>
+                <Card>
+                  <CardContent>
+                    <Typography variant="body2" color="textSecondary">
+                      Tema: {theme === 'light' ? 'Chiaro' : theme === 'dark' ? 'Scuro' : 'Automatico'}
                     </Typography>
-                    <Box>
-                      {isEditing ? (
-                        <>
-                          <Button
-                            variant="contained"
-                            startIcon={<Save />}
-                            onClick={handleSave}
-                            sx={{ mr: 1 }}
-                          >
-                            Salva
-                          </Button>
-                          <Button
-                            variant="outlined"
-                            startIcon={<Cancel />}
-                            onClick={handleCancel}
-                          >
-                            Annulla
-                          </Button>
-                        </>
-                      ) : (
-                        <Button
-                          variant="contained"
-                          startIcon={<Edit />}
-                          onClick={() => setIsEditing(true)}
-                        >
-                          Modifica
-                        </Button>
-                      )}
-                    </Box>
-                  </Box>
+                    <Typography variant="body2" color="textSecondary">
+                      Lingua: {language === 'it' ? 'Italiano' : language === 'en' ? 'English' : language === 'de' ? 'Deutsch' : 'Français'}
+                    </Typography>
+                    <Typography variant="body2" color="textSecondary">
+                      Valuta: {currency}
+                    </Typography>
+                    <Typography variant="body2" color="textSecondary">
+                      Fuso Orario: {timezone}
+                    </Typography>
+                  </CardContent>
+                </Card>
+              </Grid>
+            </Grid>
+          </TabPanel>
 
-                  <Grid container spacing={3}>
-                    <Grid item xs={12} md={6}>
-                      <TextField
-                        fullWidth
-                        label="Nome"
-                        value={userSettings.firstName}
-                        onChange={(e) => setUserSettings({ ...userSettings, firstName: e.target.value })}
-                        disabled={!isEditing}
-                        sx={{ mb: 2 }}
-                      />
-                    </Grid>
-                    <Grid item xs={12} md={6}>
-                      <TextField
-                        fullWidth
-                        label="Cognome"
-                        value={userSettings.lastName}
-                        onChange={(e) => setUserSettings({ ...userSettings, lastName: e.target.value })}
-                        disabled={!isEditing}
-                        sx={{ mb: 2 }}
-                      />
-                    </Grid>
-                    <Grid item xs={12} md={6}>
-                      <TextField
-                        fullWidth
-                        label="Email"
-                        type="email"
-                        value={userSettings.email}
-                        onChange={(e) => setUserSettings({ ...userSettings, email: e.target.value })}
-                        disabled={!isEditing}
-                        sx={{ mb: 2 }}
-                      />
-                    </Grid>
-                    <Grid item xs={12} md={6}>
-                      <TextField
-                        fullWidth
-                        label="Telefono"
-                        value={userSettings.phone}
-                        onChange={(e) => setUserSettings({ ...userSettings, phone: e.target.value })}
-                        disabled={!isEditing}
-                        sx={{ mb: 2 }}
-                      />
-                    </Grid>
-                    <Grid item xs={12} md={4}>
-                      <FormControl fullWidth sx={{ mb: 2 }}>
-                        <InputLabel>Lingua</InputLabel>
-                        <Select
-                          value={userSettings.language}
-                          label="Lingua"
-                          onChange={(e) => setUserSettings({ ...userSettings, language: e.target.value })}
-                          disabled={!isEditing}
-                        >
-                          <MenuItem value="it">Italiano</MenuItem>
-                          <MenuItem value="en">English</MenuItem>
-                          <MenuItem value="es">Español</MenuItem>
-                          <MenuItem value="fr">Français</MenuItem>
-                        </Select>
-                      </FormControl>
-                    </Grid>
-                    <Grid item xs={12} md={4}>
-                      <FormControl fullWidth sx={{ mb: 2 }}>
-                        <InputLabel>Fuso Orario</InputLabel>
-                        <Select
-                          value={userSettings.timezone}
-                          label="Fuso Orario"
-                          onChange={(e) => setUserSettings({ ...userSettings, timezone: e.target.value })}
-                          disabled={!isEditing}
-                        >
-                          <MenuItem value="Europe/Rome">Europe/Rome</MenuItem>
-                          <MenuItem value="Europe/London">Europe/London</MenuItem>
-                          <MenuItem value="America/New_York">America/New_York</MenuItem>
-                          <MenuItem value="Asia/Tokyo">Asia/Tokyo</MenuItem>
-                        </Select>
-                      </FormControl>
-                    </Grid>
-                    <Grid item xs={12} md={4}>
-                      <FormControl fullWidth sx={{ mb: 2 }}>
-                        <InputLabel>Valuta</InputLabel>
-                        <Select
-                          value={userSettings.currency}
-                          label="Valuta"
-                          onChange={(e) => setUserSettings({ ...userSettings, currency: e.target.value })}
-                          disabled={!isEditing}
-                        >
-                          <MenuItem value="EUR">EUR (€)</MenuItem>
-                          <MenuItem value="USD">USD ($)</MenuItem>
-                          <MenuItem value="GBP">GBP (£)</MenuItem>
-                          <MenuItem value="JPY">JPY (¥)</MenuItem>
-                        </Select>
-                      </FormControl>
-                    </Grid>
-                  </Grid>
+          {/* System Tab */}
+          <TabPanel value={tabValue} index={4}>
+            <Grid container spacing={3}>
+              <Grid item xs={12} md={6}>
+                <Typography variant="h6" gutterBottom>
+                  Informazioni Sistema
+                </Typography>
+                <List>
+                  <ListItem>
+                    <ListItemIcon>
+                      <Storage />
+                    </ListItemIcon>
+                    <ListItemText
+                      primary="Versione"
+                      secondary={mockSystemInfo.version}
+                    />
+                  </ListItem>
+                  <ListItem>
+                    <ListItemIcon>
+                      <Update />
+                    </ListItemIcon>
+                    <ListItemText
+                      primary="Ultimo Aggiornamento"
+                      secondary={mockSystemInfo.lastUpdate}
+                    />
+                  </ListItem>
+                  <ListItem>
+                    <ListItemIcon>
+                      <Storage />
+                    </ListItemIcon>
+                    <ListItemText
+                      primary="Dimensione Database"
+                      secondary={mockSystemInfo.databaseSize}
+                    />
+                  </ListItem>
+                  <ListItem>
+                    <ListItemIcon>
+                      <Backup />
+                    </ListItemIcon>
+                    <ListItemText
+                      primary="Uptime"
+                      secondary={mockSystemInfo.uptime}
+                    />
+                  </ListItem>
+                </List>
+              </Grid>
+              <Grid item xs={12} md={6}>
+                <Typography variant="h6" gutterBottom>
+                  Statistiche
+                </Typography>
+                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                  <Card>
+                    <CardContent>
+                      <Typography variant="h4" color="primary.main" fontWeight="bold">
+                        {mockSystemInfo.activeUsers}
+                      </Typography>
+                      <Typography variant="body2" color="textSecondary">
+                        Utenti Attivi
+                      </Typography>
+                    </CardContent>
+                  </Card>
+                  <Card>
+                    <CardContent>
+                      <Typography variant="h4" color="success.main" fontWeight="bold">
+                        {mockSystemInfo.totalTransactions.toLocaleString()}
+                      </Typography>
+                      <Typography variant="body2" color="textSecondary">
+                        Transazioni Totali
+                      </Typography>
+                    </CardContent>
+                  </Card>
                 </Box>
-              )}
+              </Grid>
+            </Grid>
+          </TabPanel>
 
-              {/* Security Settings */}
-              {activeTab === 1 && (
-                <Box>
-                  <Typography variant="h5" fontWeight="bold" gutterBottom>
-                    Sicurezza
-                  </Typography>
-                  
-                  <Grid container spacing={3}>
-                    <Grid item xs={12} md={6}>
-                      <Card>
-                        <CardContent>
-                          <Typography variant="h6" gutterBottom>
-                            Autenticazione a Due Fattori
-                          </Typography>
-                          <FormControlLabel
-                            control={
-                              <Switch
-                                checked={securitySettings.twoFactorAuth}
-                                onChange={(e) => setSecuritySettings({ ...securitySettings, twoFactorAuth: e.target.checked })}
-                              />
-                            }
-                            label="Abilita 2FA"
-                          />
-                          <Typography variant="body2" color="textSecondary" sx={{ mt: 1 }}>
-                            Aggiungi un livello extra di sicurezza al tuo account
-                          </Typography>
-                        </CardContent>
-                      </Card>
-                    </Grid>
-                    
-                    <Grid item xs={12} md={6}>
-                      <Card>
-                        <CardContent>
-                          <Typography variant="h6" gutterBottom>
-                            Notifiche di Accesso
-                          </Typography>
-                          <FormControlLabel
-                            control={
-                              <Switch
-                                checked={securitySettings.loginNotifications}
-                                onChange={(e) => setSecuritySettings({ ...securitySettings, loginNotifications: e.target.checked })}
-                              />
-                            }
-                            label="Ricevi notifiche per nuovi accessi"
-                          />
-                          <Typography variant="body2" color="textSecondary" sx={{ mt: 1 }}>
-                            Ricevi un'email quando accedi da un nuovo dispositivo
-                          </Typography>
-                        </CardContent>
-                      </Card>
-                    </Grid>
+          {/* Debug Tab */}
+          <TabPanel value={tabValue} index={5}>
+            <SystemDebug />
+          </TabPanel>
+        </Paper>
 
-                    <Grid item xs={12} md={6}>
-                      <FormControl fullWidth>
-                        <InputLabel>Timeout Sessione (minuti)</InputLabel>
-                        <Select
-                          value={securitySettings.sessionTimeout}
-                          label="Timeout Sessione (minuti)"
-                          onChange={(e) => setSecuritySettings({ ...securitySettings, sessionTimeout: e.target.value as number })}
-                        >
-                          <MenuItem value={15}>15 minuti</MenuItem>
-                          <MenuItem value={30}>30 minuti</MenuItem>
-                          <MenuItem value={60}>1 ora</MenuItem>
-                          <MenuItem value={120}>2 ore</MenuItem>
-                        </Select>
-                      </FormControl>
-                    </Grid>
-
-                    <Grid item xs={12} md={6}>
-                      <FormControl fullWidth>
-                        <InputLabel>Scadenza Password (giorni)</InputLabel>
-                        <Select
-                          value={securitySettings.passwordExpiry}
-                          label="Scadenza Password (giorni)"
-                          onChange={(e) => setSecuritySettings({ ...securitySettings, passwordExpiry: e.target.value as number })}
-                        >
-                          <MenuItem value={30}>30 giorni</MenuItem>
-                          <MenuItem value={60}>60 giorni</MenuItem>
-                          <MenuItem value={90}>90 giorni</MenuItem>
-                          <MenuItem value={180}>180 giorni</MenuItem>
-                        </Select>
-                      </FormControl>
-                    </Grid>
-                  </Grid>
-                </Box>
-              )}
-
-              {/* Notification Settings */}
-              {activeTab === 2 && (
-                <Box>
-                  <Typography variant="h5" fontWeight="bold" gutterBottom>
-                    Notifiche
-                  </Typography>
-                  
-                  <Grid container spacing={3}>
-                    <Grid item xs={12} md={6}>
-                      <Card>
-                        <CardContent>
-                          <Typography variant="h6" gutterBottom>
-                            Canali di Notifica
-                          </Typography>
-                          <FormControlLabel
-                            control={
-                              <Switch
-                                checked={notificationSettings.emailNotifications}
-                                onChange={(e) => setNotificationSettings({ ...notificationSettings, emailNotifications: e.target.checked })}
-                              />
-                            }
-                            label="Email"
-                          />
-                          <FormControlLabel
-                            control={
-                              <Switch
-                                checked={notificationSettings.smsNotifications}
-                                onChange={(e) => setNotificationSettings({ ...notificationSettings, smsNotifications: e.target.checked })}
-                              />
-                            }
-                            label="SMS"
-                          />
-                          <FormControlLabel
-                            control={
-                              <Switch
-                                checked={notificationSettings.pushNotifications}
-                                onChange={(e) => setNotificationSettings({ ...notificationSettings, pushNotifications: e.target.checked })}
-                              />
-                            }
-                            label="Push"
-                          />
-                        </CardContent>
-                      </Card>
-                    </Grid>
-                    
-                    <Grid item xs={12} md={6}>
-                      <Card>
-                        <CardContent>
-                          <Typography variant="h6" gutterBottom>
-                            Tipi di Notifica
-                          </Typography>
-                          <FormControlLabel
-                            control={
-                              <Switch
-                                checked={notificationSettings.transactionAlerts}
-                                onChange={(e) => setNotificationSettings({ ...notificationSettings, transactionAlerts: e.target.checked })}
-                              />
-                            }
-                            label="Avvisi Transazioni"
-                          />
-                          <FormControlLabel
-                            control={
-                              <Switch
-                                checked={notificationSettings.securityAlerts}
-                                onChange={(e) => setNotificationSettings({ ...notificationSettings, securityAlerts: e.target.checked })}
-                              />
-                            }
-                            label="Avvisi Sicurezza"
-                          />
-                          <FormControlLabel
-                            control={
-                              <Switch
-                                checked={notificationSettings.marketingEmails}
-                                onChange={(e) => setNotificationSettings({ ...notificationSettings, marketingEmails: e.target.checked })}
-                              />
-                            }
-                            label="Email Marketing"
-                          />
-                        </CardContent>
-                      </Card>
-                    </Grid>
-                  </Grid>
-                </Box>
-              )}
-
-              {/* System Settings */}
-              {activeTab === 3 && (
-                <Box>
-                  <Typography variant="h5" fontWeight="bold" gutterBottom>
-                    Sistema
-                  </Typography>
-                  
-                  <Grid container spacing={3}>
-                    <Grid item xs={12} md={6}>
-                      <Card>
-                        <CardContent>
-                          <Typography variant="h6" gutterBottom>
-                            Aspetto
-                          </Typography>
-                          <FormControlLabel
-                            control={
-                              <Switch
-                                checked={systemSettings.darkMode}
-                                onChange={(e) => setSystemSettings({ ...systemSettings, darkMode: e.target.checked })}
-                                icon={<LightMode />}
-                                checkedIcon={<DarkMode />}
-                              />
-                            }
-                            label="Modalità Scura"
-                          />
-                          <Typography variant="body2" color="textSecondary" sx={{ mt: 1 }}>
-                            Cambia l'aspetto dell'interfaccia
-                          </Typography>
-                        </CardContent>
-                      </Card>
-                    </Grid>
-                    
-                    <Grid item xs={12} md={6}>
-                      <Card>
-                        <CardContent>
-                          <Typography variant="h6" gutterBottom>
-                            Logout Automatico
-                          </Typography>
-                          <FormControlLabel
-                            control={
-                              <Switch
-                                checked={systemSettings.autoLogout}
-                                onChange={(e) => setSystemSettings({ ...systemSettings, autoLogout: e.target.checked })}
-                              />
-                            }
-                            label="Abilita logout automatico"
-                          />
-                          <Typography variant="body2" color="textSecondary" sx={{ mt: 1 }}>
-                            Disconnetti automaticamente dopo inattività
-                          </Typography>
-                        </CardContent>
-                      </Card>
-                    </Grid>
-
-                    <Grid item xs={12} md={6}>
-                      <FormControl fullWidth>
-                        <InputLabel>Retention Dati (giorni)</InputLabel>
-                        <Select
-                          value={systemSettings.dataRetention}
-                          label="Retention Dati (giorni)"
-                          onChange={(e) => setSystemSettings({ ...systemSettings, dataRetention: e.target.value as number })}
-                        >
-                          <MenuItem value={30}>30 giorni</MenuItem>
-                          <MenuItem value={90}>90 giorni</MenuItem>
-                          <MenuItem value={180}>180 giorni</MenuItem>
-                          <MenuItem value={365}>365 giorni</MenuItem>
-                        </Select>
-                      </FormControl>
-                    </Grid>
-
-                    <Grid item xs={12} md={6}>
-                      <FormControl fullWidth>
-                        <InputLabel>Frequenza Backup</InputLabel>
-                        <Select
-                          value={systemSettings.backupFrequency}
-                          label="Frequenza Backup"
-                          onChange={(e) => setSystemSettings({ ...systemSettings, backupFrequency: e.target.value })}
-                        >
-                          <MenuItem value="daily">Giornaliero</MenuItem>
-                          <MenuItem value="weekly">Settimanale</MenuItem>
-                          <MenuItem value="monthly">Mensile</MenuItem>
-                        </Select>
-                      </FormControl>
-                    </Grid>
-                  </Grid>
-                </Box>
-              )}
-            </Paper>
-          </Grid>
-        </Grid>
+        {/* Action Buttons */}
+        <Box sx={{ mt: 3, display: 'flex', gap: 2, justifyContent: 'flex-end' }}>
+          <Button
+            variant="outlined"
+            startIcon={<Refresh />}
+          >
+            Ripristina
+          </Button>
+          <Button
+            variant="contained"
+            startIcon={<Save />}
+            onClick={handleSave}
+          >
+            Salva Impostazioni
+          </Button>
+        </Box>
       </Box>
     </Container>
   );
